@@ -6,20 +6,56 @@ describe("rate-limit-redis node module", function() {
   var MockRedisClient = function() {
     var keys = {};
 
-    this.incr = function(key, cb) {
-      if (keys[key]) {
-        keys[key]++;
-      } else {
-        keys[key] = 1;
-      }
+    this.multi = function() {
+      var opts = [];
 
-      cb(null, keys[key]);
+      this.incr = function(key) {
+        opts.push(function() {
+          if (keys[key]) {
+            keys[key].value++;
+          } else {
+            keys[key] = { value: 1 };
+          }
+
+          return keys[key].value;
+        });
+
+        return this;
+      };
+
+      this.ttl = function(key) {
+        opts.push(function() {
+          if (keys[key] && keys[key].ttl) {
+            return Math.max(keys[key].ttl - Math.round((new Date()).valueOf() / 1000), -1);
+          }
+
+          return -1;
+        });
+
+        return this;
+      };
+
+      this.exec = function(cb) {
+        cb(null, opts.map(function(opt) {
+          return opt();
+        }));
+      };
+
+      return this;
     };
 
     this.expire = function(key, expiry) {
-      setTimeout(function() {
-        delete keys[key];
-      }, expiry * 1000);
+      if (keys[key]) {
+        if (keys[key].timeout) {
+          clearTimeout(keys[key].timeout);
+        }
+
+        keys[key].ttl = Math.round((new Date()).valueOf() / 1000) + expiry;
+
+        keys[key].timeout = setTimeout(function() {
+          delete keys[key];
+        }, keys[key].ttl * 1000);
+      }
     };
 
     this.del = function(key) {
@@ -100,7 +136,7 @@ describe("rate-limit-redis node module", function() {
     });
   });
 
-  it("resets all keys for the store when the timeout is reached", function(done) {
+  it("resets key for the store when the timeout is reached", function(done) {
     var store = new RedisStore({
       client: new MockRedisClient(),
       expiry: 1
