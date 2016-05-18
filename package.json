@@ -1,8 +1,8 @@
 {
   "name": "rate-limit-redis",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provides a Redis store for the express-rate-limit RateLimit middleware.",
-  "main": "lib/rate-limit-redis.js",
+  "main": "lib/redis-store.js",
   "scripts": {
     "test": "grunt"
   },
