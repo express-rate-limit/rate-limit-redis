@@ -1,0 +1,42 @@
+# Rate Limit Redis
+
+[![Build Status](https://secure.travis-ci.org/wyattjoh/rate-limit-redis.png?branch=master)](http://travis-ci.org/wyattjoh/rate-limit-redis)
+[![NPM version](http://badge.fury.io/js/rate-limit-redis.png)](https://npmjs.org/package/rate-limit-redis "View this project on NPM")
+[![Dependency Status](https://david-dm.org/wyattjoh/rate-limit-redis.png?theme=shields.io)](https://david-dm.org/wyattjoh/rate-limit-redis)
+[![Development Dependency Status](https://david-dm.org/wyattjoh/rate-limit-redis/dev-status.png?theme=shields.io)](https://david-dm.org/wyattjoh/rate-limit-redis#info=devDependencies)
+
+Redis client for the [express-rate-limit](https://github.com/nfriedly/express-rate-limit) middleware.
+
+## Install
+
+```sh
+$ npm install --save rate-limit-redis
+```
+
+## Usage
+
+```js
+var RateLimit = require('express-rate-limit');
+var RedisStore = require('rate-limit-redis');
+
+var limiter = new RateLimit({
+  store: new RedisStore({
+    // see Configuration
+  }),
+  max: 100, // limit each IP to 100 requests per windowMs
+  delayMs: 0 // disable delaying - full speed until the max limit is reached
+});
+
+//  apply to all requests
+app.use(limiter);
+```
+
+## Configuration
+
+* **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
+* **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
+* **client**: [Redis Client](https://github.com/NodeRedis/node_redis) - A node_redis Redis Client to use. Defaults to `require('redis').createClient();`.
+
+## License
+
+MIT © [Wyatt Johnson](https://wyattjoh.ca/), [Nathan Friedly](http://nfriedly.com/)

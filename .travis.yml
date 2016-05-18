@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- stable
+- 4
+- '0.12'
+deploy:
+  provider: npm
+  email: wyattjoh@gmail.com
+  api_key:
+    secure: S9fSsQPLrGreTxPpqTA5Z9q1zJEycsEEa7UUt2KU7rldUWHLNHzD4X98DV4VRowzArz8Svx/R6Ha8wqm4IffEaDAHdECiZO+zMdbK47xJM8mMla/Djb+6ufH4b7/Z8qNWk0xpQmAf3eeztSVI6Q09VEoW1r+xZeWL8UzjRq7liacwYkIAhMg11l8WGbFyqE9rbE13X/hjx3e45+2CaTF73XGKUs0oVkv6UmqUHdi3E96U0iBdLdmiETAuWMzoSjZxBOsMAabGgqn6eNPZ3u6Q2/m4EZ/xIsO1ZaZg3f9yS8yaE9nUNmNAp5GYH1NIkiTd1Heb/f1IUBZei146eFvDRgJAXAzmRk8eRm1GF2+rMdP4x/sDBQEXZWGzzEROw5QpZzPTRGXcvqZ8ZfTN4pXLUuxHIshIhegbVtP9oP02ov2x9MRv2e4+v9Imp7JYbjUqEv2nxKCgoFNfty38qjMDVa7L3B6QIgkRoPxP4iO0/bYJsGAzdd16E96xP/K25GCY+twu6yNapwXUfq8H4nZfvu/CFsyJ14nV5nvfsV7iyPrUdkPOkWKNwO5+0er86lnzriVIl/nrrirAitEzbGqbGuQGkebsBbFBR3EzjLNqdhYjeL9BRtmb+BqaTlmS7iTRqUKEzWseS9LPW8tvn27ShAxcpSayxDXqky8Ga5RdDM=
+  on:
+    tags: true
+    repo: wyattjoh/rate-limit-redis
