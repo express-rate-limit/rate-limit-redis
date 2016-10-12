@@ -35,7 +35,7 @@ app.use(limiter);
 
 * **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
 * **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
-* **client**: [Redis Client](https://github.com/NodeRedis/node_redis) - A node_redis Redis Client to use. Defaults to `require('redis').createClient();`.
+* **client**: [Redis Client](https://github.com/NodeRedis/node_redis) or [ioredis Client](https://github.com/luin/ioredis)- A Redis Client to use. Defaults to `require('redis').createClient();`.
 
 ## License
 
