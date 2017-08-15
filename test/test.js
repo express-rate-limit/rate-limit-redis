@@ -54,7 +54,7 @@ describe("rate-limit-redis node module", function() {
 
         keys[key].timeout = setTimeout(function() {
           delete keys[key];
-        }, keys[key].ttl * 1000);
+        }, keys[key].ttl * 1000 - new Date().getTime());
       }
     };
 
