@@ -23,6 +23,20 @@ describe("rate-limit-redis node module", function() {
         return this;
       };
 
+      this.decr = function(key) {
+        opts.push(function() {
+          if (keys[key]) {
+            keys[key].value--;
+          } else {
+            keys[key] = { value: 0 };
+          }
+
+          return keys[key].value;
+        });
+
+        return this;
+      };
+
       this.ttl = function(key) {
         opts.push(function() {
           if (keys[key] && keys[key].ttl) {
@@ -109,6 +123,28 @@ describe("rate-limit-redis node module", function() {
             done();
           } else {
             done(new Error("incr did not increment the store"));
+          }
+        }
+      });
+    });
+  });
+
+  it("decrements the key for the store each decrement", function(done) {
+    var store = new RedisStore({
+      client: new MockRedisClient()
+    });
+    var key = "test-store-decrement";
+
+    store.incr(key, function() {
+      store.decrement(key);
+      store.incr(key, function(err, value) {
+        if (err) {
+          done(err);
+        } else {
+          if (value === 1) {
+            done();
+          } else {
+            done(new Error("decrement did not decrement the store"));
           }
         }
       });
