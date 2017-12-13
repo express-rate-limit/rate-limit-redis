@@ -23,10 +23,10 @@ describe("rate-limit-redis node module", function() {
         return this;
       };
 
-      this.ttl = function(key) {
+      this.pttl = function(key) {
         opts.push(function() {
           if (keys[key] && keys[key].ttl) {
-            return Math.max(keys[key].ttl - Math.round((new Date()).valueOf() / 1000), -1);
+            return Math.max(keys[key].ttl - new Date().valueOf(), -1);
           }
 
           return -1;
@@ -44,17 +44,17 @@ describe("rate-limit-redis node module", function() {
       return this;
     };
 
-    this.expire = function(key, expiry) {
+    this.pexpire = function(key, expiry) {
       if (keys[key]) {
         if (keys[key].timeout) {
           clearTimeout(keys[key].timeout);
         }
 
-        keys[key].ttl = Math.round((new Date()).valueOf() / 1000) + expiry;
+        keys[key].pttl = new Date() + expiry;
 
         keys[key].timeout = setTimeout(function() {
           delete keys[key];
-        }, keys[key].ttl * 1000 - new Date().getTime());
+        }, keys[key].pttl - new Date().getTime());
       }
     };
 
