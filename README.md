@@ -34,6 +34,7 @@ app.use(limiter);
 ## Configuration
 
 * **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
+* **resetExpiryOnChange**: boolean - if the expiry time should be reset every time a key is incremented/decremented. This means that when the limit is reached and the user is given a 429 response, the rate limit window is extended. Defaults to `false`.
 * **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
 * **client**: [Redis Client](https://github.com/NodeRedis/node_redis) or [ioredis Client](https://github.com/luin/ioredis)- A Redis Client to use. Defaults to `require('redis').createClient();`.
 
