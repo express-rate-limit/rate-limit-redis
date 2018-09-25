@@ -31,6 +31,22 @@ var limiter = new RateLimit({
 app.use(limiter);
 ```
 
+## Connect to UDP Socket
+```
+var RateLimit = require('express-rate-limit');
+var RedisStore = require('rate-limit-redis');
+var Redis = require('ioredis');
+var client = new Redis('/tmp/redis.sock');
+
+var limiter = new RateLimit({
+  store: new RedisStore({
+    client: client,
+  }),
+  max: 100, // limit each IP to 100 requests per windowMs
+  delayMs: 0 // disable delaying - full speed until the max limit is reached
+});
+```
+
 ## Configuration
 
 * **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
