@@ -16,10 +16,10 @@ $ npm install --save rate-limit-redis
 ## Usage
 
 ```js
-var RateLimit = require('express-rate-limit');
-var RedisStore = require('rate-limit-redis');
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
 
-var limiter = new RateLimit({
+const limiter = new RateLimit({
   store: new RedisStore({
     // see Configuration
   }),
@@ -32,15 +32,16 @@ app.use(limiter);
 ```
 
 ## Connect to UDP Socket
-```
-var RateLimit = require('express-rate-limit');
-var RedisStore = require('rate-limit-redis');
-var Redis = require('ioredis');
-var client = new Redis('/tmp/redis.sock');
 
-var limiter = new RateLimit({
+```js
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const Redis = require('ioredis');
+const client = new Redis('/tmp/redis.sock');
+
+const limiter = new RateLimit({
   store: new RedisStore({
-    client: client,
+    client: client
   }),
   max: 100, // limit each IP to 100 requests per windowMs
   delayMs: 0 // disable delaying - full speed until the max limit is reached
@@ -49,10 +50,11 @@ var limiter = new RateLimit({
 
 ## Configuration
 
-* **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
-* **resetExpiryOnChange**: boolean - if the expiry time should be reset every time a key is incremented/decremented. This means that when the limit is reached and the user is given a 429 response, the rate limit window is extended. Defaults to `false`.
-* **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
-* **client**: [Redis Client](https://github.com/NodeRedis/node_redis) or [ioredis Client](https://github.com/luin/ioredis)- A Redis Client to use. Defaults to `require('redis').createClient();`.
+- **expiry**: seconds - how long each rate limiting window exists for. Defaults to `60`.
+- **resetExpiryOnChange**: boolean - if the expiry time should be reset every time a key is incremented/decremented. This means that when the limit is reached and the user is given a 429 response, the rate limit window is extended. Defaults to `false`.
+- **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
+- **client**: [Redis Client](https://github.com/NodeRedis/node_redis) or [ioredis Client](https://github.com/luin/ioredis)- A Redis Client to use. Defaults to `require('redis').createClient();`.
+- **redisURL**: string - a Redis connection string to be used for the default client connection. Ignored when the `client` option is provided. [Redis Client connection string format and options](https://github.com/NodeRedis/node_redis#rediscreateclient).
 
 ## License
 
