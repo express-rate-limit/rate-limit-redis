@@ -1,9 +1,8 @@
 language: node_js
 node_js:
-- 6
-- 8
-- 10
-- stable
+  - 8
+  - 10
+  - stable
 deploy:
   provider: npm
   email: wyattjoh@gmail.com
