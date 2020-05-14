@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "defaults": "^1.0.3",
-    "redis": "^2.8.0"
+    "redis": "^3.0.2"
   }
 }
