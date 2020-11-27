@@ -16,15 +16,15 @@ $ npm install --save rate-limit-redis
 ## Usage
 
 ```js
-const RateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
+const RateLimit = require("express-rate-limit");
+const RedisStore = require("rate-limit-redis");
 
 const limiter = new RateLimit({
   store: new RedisStore({
     // see Configuration
   }),
   max: 100, // limit each IP to 100 requests per windowMs
-  delayMs: 0 // disable delaying - full speed until the max limit is reached
+  delayMs: 0, // disable delaying - full speed until the max limit is reached
 });
 
 //  apply to all requests
@@ -34,17 +34,17 @@ app.use(limiter);
 ## Connect to UDP Socket
 
 ```js
-const RateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
-const Redis = require('ioredis');
-const client = new Redis('/tmp/redis.sock');
+const RateLimit = require("express-rate-limit");
+const RedisStore = require("rate-limit-redis");
+const Redis = require("ioredis");
+const client = new Redis("/tmp/redis.sock");
 
 const limiter = new RateLimit({
   store: new RedisStore({
-    client: client
+    client: client,
   }),
   max: 100, // limit each IP to 100 requests per windowMs
-  delayMs: 0 // disable delaying - full speed until the max limit is reached
+  delayMs: 0, // disable delaying - full speed until the max limit is reached
 });
 ```
 
@@ -55,7 +55,7 @@ const limiter = new RateLimit({
 - **prefix**: string - prefix to add to entries in Redis. Defaults to `rl:`.
 - **client**: [Redis Client](https://github.com/NodeRedis/node_redis) or [ioredis Client](https://github.com/luin/ioredis)- A Redis Client to use. Defaults to `require('redis').createClient();`.
 - **redisURL**: string - a Redis connection string to be used for the default client connection. Ignored when the `client` option is provided. [Redis Client connection string format and options](https://github.com/NodeRedis/node_redis#rediscreateclient).
-- **passIfNotConnected**: boolean - If Redis fails (not connected), let the request succeed as failover. Defaults to `false`.
+- **passIfNotConnected**: boolean - If Redis is not connected, let the request succeed as failover. Defaults to `false`.
 
 ## License
 
