@@ -1,0 +1,23 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.5
+        with:
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
+      - name: Lint Version
+        run: npx @coralproject/package-version-lint --expect ${GITHUB_REF#refs/tags/v}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

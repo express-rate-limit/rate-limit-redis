@@ -1,7 +1,7 @@
 # Rate Limit Redis
 
 [![Build Status](https://secure.travis-ci.org/wyattjoh/rate-limit-redis.png?branch=master)](http://travis-ci.org/wyattjoh/rate-limit-redis)
-[![NPM version](http://badge.fury.io/js/rate-limit-redis.png)](https://npmjs.org/package/rate-limit-redis "View this project on NPM")
+[![NPM version](http://badge.fury.io/js/rate-limit-redis.png)](https://npmjs.org/package/rate-limit-redis 'View this project on NPM')
 [![Dependency Status](https://david-dm.org/wyattjoh/rate-limit-redis.png?theme=shields.io)](https://david-dm.org/wyattjoh/rate-limit-redis)
 [![Development Dependency Status](https://david-dm.org/wyattjoh/rate-limit-redis/dev-status.png?theme=shields.io)](https://david-dm.org/wyattjoh/rate-limit-redis#info=devDependencies)
 
@@ -16,8 +16,8 @@ $ npm install --save rate-limit-redis
 ## Usage
 
 ```js
-const RateLimit = require("express-rate-limit");
-const RedisStore = require("rate-limit-redis");
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
 
 const limiter = new RateLimit({
   store: new RedisStore({
@@ -34,10 +34,10 @@ app.use(limiter);
 ## Connect to UDP Socket
 
 ```js
-const RateLimit = require("express-rate-limit");
-const RedisStore = require("rate-limit-redis");
-const Redis = require("ioredis");
-const client = new Redis("/tmp/redis.sock");
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const Redis = require('ioredis');
+const client = new Redis('/tmp/redis.sock');
 
 const limiter = new RateLimit({
   store: new RedisStore({

@@ -1,10 +1,21 @@
 {
   "name": "rate-limit-redis",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Provides a Redis store for the express-rate-limit RateLimit middleware.",
-  "main": "lib/redis-store.js",
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/rate-limit-redis.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "test": "grunt"
+    "build": "microbundle build --format modern,esm,cjs",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=10"
   },
   "repository": {
     "type": "git",
@@ -16,20 +27,26 @@
     "url": "https://github.com/wyattjoh/rate-limit-redis/issues"
   },
   "homepage": "https://github.com/wyattjoh/rate-limit-redis#readme",
-  "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-cli": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-mocha-cli": "^2.1.0",
-    "jshint-stylish": "^2.1.0",
-    "load-grunt-tasks": "^3.4.0",
-    "supertest": "^1.1.0",
-    "time-grunt": "^1.3.0"
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
   },
-  "dependencies": {
-    "defaults": "^1.0.3",
-    "redis": "^3.0.2"
+  "devDependencies": {
+    "@types/ioredis": "^4.26.4",
+    "@types/redis": "^2.8.29",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "eslint": "^7.29.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "ioredis": "^4.27.6",
+    "lint-staged": "^11.0.0",
+    "microbundle": "^0.11.0",
+    "prettier": "^2.3.1",
+    "redis": "^3.1.2"
+  },
+  "lint-staged": {
+    "*.{j,t}s{,x}": "eslint --cache --fix"
   }
 }
