@@ -1,0 +1,14 @@
+# ~/.gitignore
+# A list of files and folders that should not be tracked by Git
+
+node_modules/
+dist/
+coverage/
+
+.idea/
+.vscode/
+
+*.log
+*.tgz
+*.bak
+*.tmp

@@ -1,0 +1,17 @@
+// ~/tsconfig.json
+// The configuration for Typescript.
+
+{
+	"include": ["source/"],
+	"exclude": ["node_modules/"],
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"declaration": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"moduleResolution": "node"
+	}
+}
