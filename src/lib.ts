@@ -1,3 +1,4 @@
+import { stripIndents } from "common-tags";
 import {
   Store,
   IncrementResponse,
@@ -28,6 +29,11 @@ class RedisStore implements Store {
   resetExpiryOnChange: boolean;
 
   /**
+   * Stores the loaded SHA1 of the LUA script for executing the increment operations.
+   */
+  loadedScriptSha1: Promise<string>;
+
+  /**
    * The number of milliseconds to remember that user's requests.
    */
   windowMs!: number;
@@ -41,6 +47,37 @@ class RedisStore implements Store {
     this.sendCommand = options.sendCommand;
     this.prefix = options.prefix ?? "rl:";
     this.resetExpiryOnChange = options.resetExpiryOnChange ?? false;
+
+    // So that the script loading can occur non-blocking, this will send
+    // the script to be loaded, and will capture the value within the
+    // promise return. This way, if increments start being called before
+    // the script has finished loading, it will wait until it is loaded
+    // before it continues.
+    this.loadedScriptSha1 = this.loadScript();
+  }
+
+  async loadScript(): Promise<string> {
+    const result = await this.sendCommand(
+      "SCRIPT",
+      "LOAD",
+      stripIndents`
+        local totalHits = redis.call("INCR", KEYS[1])
+        local timeToExpire = redis.call("PTTL", KEYS[1])
+        if timeToExpire <= 0 or ARGV[1] == "1"
+        then
+            redis.call("PEXPIRE", KEYS[1], tonumber(ARGV[2]))
+            timeToExpire = tonumber(ARGV[2])
+        end
+
+        return { totalHits, timeToExpire }
+    `
+    );
+
+    if (typeof result !== "string") {
+      throw new TypeError("unexpected reply from redis client");
+    }
+
+    return result;
   }
 
   /**
@@ -71,16 +108,31 @@ class RedisStore implements Store {
    * @returns {IncrementResponse} - The number of hits and reset time for that client
    */
   async increment(key: string): Promise<IncrementResponse> {
-    const totalHits = await this.sendCommand("INCR", this.prefixKey(key));
+    const results = await this.sendCommand(
+      "EVALSHA",
+      await this.loadedScriptSha1,
+      1,
+      this.prefixKey(key),
+      this.resetExpiryOnChange ? "1" : "0",
+      this.windowMs.toString()
+    );
 
-    let timeToExpire = await this.sendCommand("PTTL", this.prefixKey(key));
-    if (timeToExpire <= 0 || this.resetExpiryOnChange) {
-      await this.sendCommand(
-        "PEXPIRE",
-        this.prefixKey(key),
-        this.windowMs.toString()
-      );
-      timeToExpire = this.windowMs;
+    if (!Array.isArray(results)) {
+      throw new TypeError("expected result to be array of values");
+    }
+
+    if (results.length !== 2) {
+      throw new Error(`expected 2 replies, got ${results.length}`);
+    }
+
+    const totalHits = results[0];
+    if (typeof totalHits !== "number") {
+      throw new TypeError("expected value to be a number");
+    }
+
+    const timeToExpire = results[1];
+    if (typeof timeToExpire !== "number") {
+      throw new TypeError("expected value to be a number");
     }
 
     const resetTime = new Date(Date.now() + timeToExpire);

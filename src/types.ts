@@ -1,8 +1,15 @@
 /**
+ * The libraries could return the data in the following formats.
+ */
+type RedisValue = string | number;
+
+/**
  * The library sends Redis raw commands, so all we need to know are the
  * 'raw-command-sending' functions for each redis client.
  */
-export type SendCommandFn = (...args: string[]) => Promise<number> | number;
+export type SendCommandFn = (
+  ...args: RedisValue[]
+) => Promise<RedisValue | RedisValue[]>;
 
 /**
  * The configuration options for the store.
