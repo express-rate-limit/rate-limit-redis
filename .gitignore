@@ -1,6 +1,3 @@
-# ~/.gitignore
-# A list of files and folders that should not be tracked by Git
-
 node_modules/
 dist/
 coverage/
@@ -12,3 +9,6 @@ coverage/
 *.tgz
 *.bak
 *.tmp
+
+yarn.lock
+pnpm-lock.yaml

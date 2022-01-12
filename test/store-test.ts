@@ -1,7 +1,7 @@
 import { jest as Jest } from "@jest/globals";
 import { Options } from "express-rate-limit";
 
-import RedisStore from "../source/index.js";
+import RedisStore from "../src/index.js";
 
 interface Hit {
   count: number;

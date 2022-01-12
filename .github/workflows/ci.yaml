@@ -1,6 +1,3 @@
-# /.github/workflows/ci.yaml
-# GitHub actions workflow
-
 name: CI
 
 on: [push, pull_request]

@@ -1,8 +1,3 @@
-<!--
-	~/contributing.md
-	Tells users how they can contribute code to the library.
--->
-
 # Contributing Guide
 
 Thanks for your interest in contributing to `rate-limit-redis`! This guide will
@@ -68,7 +63,7 @@ rate-limit-redis
 │  └── husky/
 │     ├── _
 │     └── pre-commit
-├── source/
+├── src/
 │  ├── index.ts
 │  ├── lib.ts
 │  └── types.ts
@@ -88,7 +83,7 @@ rate-limit-redis
 #### `./`
 
 - `package.json`: Node package information.
-- `pnpm-lock.yaml`: PNPM lock file, please do not modify manually.
+- `package-lock.yaml`: Node package lock file, please do not modify manually.
 - `tsconfig.json`: The Typescript configuration for this project.
 - `changelog.md`: A list of changes that have been made in each version.
 - `contributing.md`: This file, helps contributors get started.
@@ -96,12 +91,12 @@ rate-limit-redis
 - `readme.md`: The file everyone should read before using the package. Contains
   installation and usage instructions.
 
-#### `source/`
+#### `src/`
 
-- `source/index.ts`: Re-exports all constants, functions and classes from
-  `source/lib.ts`, and types from `source/types.ts`.
-- `source/lib.ts`: The actual library code.
-- `source/types.ts`: Typescript types for the library.
+- `src/index.ts`: Re-exports all constants, functions and classes from
+  `src/lib.ts`, and types from `src/types.ts`.
+- `src/lib.ts`: The actual library code.
+- `src/types.ts`: Typescript types for the library.
 
 #### `test/`
 
@@ -114,9 +109,9 @@ rate-limit-redis
 
 When adding a new feature/fixing a bug, please add/update the readme and
 changelog as well as add tests for the same. Also make sure your code has been
-linted and that existing tests pass. You can run the linter using `pnpm lint`,
-the tests using `pnpm test` and try to automatically fix most lint issues using
-`pnpm autofix`.
+linted and that existing tests pass. You can run the linter using `npm run lint`,
+the tests using `npm run test` and try to automatically fix most lint issues using
+`npm run autofix`.
 
 Once you have made changes to the code, you will want to
 [`commit`](https://github.com/git-guides/git-commit) (basically, Git's version

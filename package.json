@@ -6,7 +6,7 @@
     "name": "Wyatt Johnson",
     "url": "https://github.com/wyattjoh"
   },
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/wyattjoh/rate-limit-redis",
   "repository": "https://github.com/wyattjoh/rate-limit-redis",
   "type": "module",
@@ -32,9 +32,9 @@
   },
   "scripts": {
     "clean": "del-cli dist/ coverage/ *.log *.tmp *.tgz *.bak",
-    "build:cjs": "esbuild --bundle --platform=node --format=cjs --outfile=dist/index.cjs --footer:js=\"module.exports = RedisStore; module.exports.default = RedisStore;\" source/index.ts",
-    "build:esm": "esbuild --bundle --platform=node --format=esm --outfile=dist/index.mjs source/index.ts",
-    "build:types": "dts-bundle-generator --out-file=dist/index.d.ts source/index.ts",
+    "build:cjs": "esbuild --bundle --platform=node --format=cjs --outfile=dist/index.cjs --footer:js=\"module.exports = RedisStore; module.exports.default = RedisStore;\" src/index.ts",
+    "build:esm": "esbuild --bundle --platform=node --format=esm --outfile=dist/index.mjs src/index.ts",
+    "build:types": "dts-bundle-generator --out-file=dist/index.d.ts src/index.ts",
     "compile": "run-s clean build:*",
     "lint:code": "xo",
     "lint:rest": "prettier --check --ignore-path=.gitignore .",
@@ -100,7 +100,7 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "source/**/*.ts"
+      "src/**/*.ts"
     ],
     "testTimeout": 30000,
     "testMatch": [
@@ -116,7 +116,7 @@
     }
   },
   "lint-staged": {
-    "{source,test}/**/*.ts": "xo --fix",
+    "{src,test}/**/*.ts": "xo --fix",
     "*.{yaml,json,md}": "prettier --write"
   }
 }

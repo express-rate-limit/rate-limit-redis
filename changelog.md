@@ -1,8 +1,3 @@
-<!--
-	~/changelog.md
-	Tells users what changes occurred in each version of the library.
--->
-
 # Changelog
 
 All notable changes to this project will be documented in this file.

@@ -1,8 +1,3 @@
-<!--
-	~/readme.md
-	Tells the users what this project is, how they can use it and how they can ask questions/contribute.
--->
-
 # <div align="center"> `rate-limit-redis` </div>
 
 <div align="center">

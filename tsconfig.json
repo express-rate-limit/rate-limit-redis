@@ -1,8 +1,5 @@
-// ~/tsconfig.json
-// The configuration for Typescript.
-
 {
-  "include": ["source/"],
+  "include": ["src/"],
   "exclude": ["node_modules/"],
   "compilerOptions": {
     "target": "esnext",
