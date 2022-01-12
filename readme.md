@@ -58,13 +58,13 @@ Import it in a CommonJS project (`type: commonjs` or no `type` field in
 `package.json`) as follows:
 
 ```ts
-const RedisStore = require('rate-limit-redis')
+const RedisStore = require("rate-limit-redis");
 ```
 
 Import it in a ESM project (`type: module` in `package.json`) as follows:
 
 ```ts
-import RedisStore from 'rate-limit-redis'
+import RedisStore from "rate-limit-redis";
 ```
 
 ### Examples
@@ -72,59 +72,59 @@ import RedisStore from 'rate-limit-redis'
 To use it with a [`node-redis`](https://github.com/redis/node-redis) client:
 
 ```ts
-import rateLimit from 'express-rate-limit'
-import RedisStore from 'rate-limit-redis'
-import { createClient } from 'redis'
+import rateLimit from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
+import { createClient } from "redis";
 
 // Create a `node-redis` client
 const client = createClient({
-	// ... (see https://github.com/redis/node-redis/blob/master/docs/client-configuration.md)
-})
+  // ... (see https://github.com/redis/node-redis/blob/master/docs/client-configuration.md)
+});
 // Then connect to the Redis server
-await client.connect()
+await client.connect();
 
 // Create and use the rate limiter
 const limiter = rateLimit({
-	// Rate limiter configuration
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Rate limiter configuration
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 
-	// Redis store configuration
-	store: new RedisStore({
-		sendCommand: (...args: string[]) => client.sendCommand(args),
-	}),
-})
-app.use(limiter)
+  // Redis store configuration
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => client.sendCommand(args),
+  }),
+});
+app.use(limiter);
 ```
 
 To use it with a [`ioredis`](https://github.com/luin/ioredis) client:
 
 ```ts
-import rateLimit from 'express-rate-limit'
-import RedisStore from 'rate-limit-redis'
-import RedisClient from 'ioredis'
+import rateLimit from "express-rate-limit";
+import RedisStore from "rate-limit-redis";
+import RedisClient from "ioredis";
 
 // Create a `ioredis` client
-const client = new RedisClient()
+const client = new RedisClient();
 // ... (see https://github.com/luin/ioredis#connect-to-redis)
 
 // Create and use the rate limiter
 const limiter = rateLimit({
-	// Rate limiter configuration
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // Rate limiter configuration
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 
-	// Redis store configuration
-	store: new RedisStore({
-		// @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-		sendCommand: (...args: string[]) => client.call(args),
-	}),
-})
-app.use(limiter)
+  // Redis store configuration
+  store: new RedisStore({
+    // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+    sendCommand: (...args: string[]) => client.call(args),
+  }),
+});
+app.use(limiter);
 ```
 
 ### Configuration
