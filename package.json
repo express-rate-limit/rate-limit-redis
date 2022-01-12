@@ -52,7 +52,6 @@
   },
   "devDependencies": {
     "@jest/globals": "^27.4.6",
-    "@types/common-tags": "^1.8.1",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.19",
@@ -118,8 +117,5 @@
   "lint-staged": {
     "{src,test}/**/*.ts": "xo --fix",
     "*.{yaml,json,md}": "prettier --write"
-  },
-  "dependencies": {
-    "common-tags": "^1.8.2"
   }
 }

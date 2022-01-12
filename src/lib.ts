@@ -1,4 +1,3 @@
-import { stripIndents } from "common-tags";
 import {
   Store,
   IncrementResponse,
@@ -60,7 +59,7 @@ class RedisStore implements Store {
     const result = await this.sendCommand(
       "SCRIPT",
       "LOAD",
-      stripIndents`
+      `
         local totalHits = redis.call("INCR", KEYS[1])
         local timeToExpire = redis.call("PTTL", KEYS[1])
         if timeToExpire <= 0 or ARGV[1] == "1"
@@ -71,6 +70,10 @@ class RedisStore implements Store {
 
         return { totalHits, timeToExpire }
     `
+        // Ensure that code changes that affect whitespace do not affect
+        // the script contents.
+        .replace(/^\s+/gm, "")
+        .trim()
     );
 
     if (typeof result !== "string") {
