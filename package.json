@@ -63,6 +63,8 @@
     "express": "^4.17.2",
     "express-rate-limit": "^6.1.0",
     "husky": "^7.0.4",
+    "ioredis": "^4.28.3",
+    "ioredis-mock": "^5.8.1",
     "jest": "^27.4.2",
     "lint-staged": "^12.1.7",
     "npm-run-all": "^4.1.5",
@@ -118,8 +120,5 @@
   "lint-staged": {
     "{src,test}/**/*.ts": "xo --fix",
     "*.{yaml,json,md}": "prettier --write"
-  },
-  "dependencies": {
-    "ioredis-mock": "^5.8.1"
   }
 }
