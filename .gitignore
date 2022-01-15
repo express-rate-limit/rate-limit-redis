@@ -1,2 +1,14 @@
-node_modules
-.idea
+node_modules/
+dist/
+coverage/
+
+.idea/
+.vscode/
+
+*.log
+*.tgz
+*.bak
+*.tmp
+
+yarn.lock
+pnpm-lock.yaml
