@@ -116,7 +116,7 @@ const limiter = rateLimit({
   // Redis store configuration
   store: new RedisStore({
     // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-    sendCommand: (...args: string[]) => client.call(args),
+    sendCommand: (...args: string[]) => client.call(...args),
   }),
 });
 app.use(limiter);
