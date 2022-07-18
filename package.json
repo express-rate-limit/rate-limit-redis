@@ -63,7 +63,7 @@
     "express": "^4.17.2",
     "express-rate-limit": "^6.1.0",
     "husky": "^7.0.4",
-    "ioredis": "^4.28.3",
+    "ioredis": "^5.2.1",
     "ioredis-mock": "^5.8.1",
     "jest": "^27.4.2",
     "lint-staged": "^12.1.7",
