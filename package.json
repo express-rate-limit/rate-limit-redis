@@ -58,7 +58,7 @@
     "@types/node": "^16.11.19",
     "cross-env": "^7.0.3",
     "del-cli": "^4.0.1",
-    "dts-bundle-generator": "^6.4.0",
+    "dts-bundle-generator": "^7.1.0",
     "esbuild": "^0.14.11",
     "express": "^4.17.2",
     "express-rate-limit": "^6.1.0",
