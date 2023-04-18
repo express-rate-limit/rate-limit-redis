@@ -103,6 +103,25 @@ class RedisStore implements Store {
     this.windowMs = options.windowMs;
   }
 
+  async runCommandWithRetry(key: string) {
+    const evalCommand = async () => this.sendCommand(
+      'EVALSHA',
+      await this.loadedScriptSha1,
+      '1',
+      this.prefixKey(key),
+      this.resetExpiryOnChange ? '1' : '0',
+      this.windowMs.toString(),
+    );
+
+    try {
+      return await evalCommand();
+    } catch (err) {
+      // todo distinguish different error types?
+      this.loadedScriptSha1 = await this.loadScript();
+      return evalCommand();
+    }
+  }
+
   /**
    * Method to increment a client's hit counter.
    *
@@ -111,14 +130,7 @@ class RedisStore implements Store {
    * @returns {IncrementResponse} - The number of hits and reset time for that client
    */
   async increment(key: string): Promise<IncrementResponse> {
-    const results = await this.sendCommand(
-      "EVALSHA",
-      await this.loadedScriptSha1,
-      "1",
-      this.prefixKey(key),
-      this.resetExpiryOnChange ? "1" : "0",
-      this.windowMs.toString()
-    );
+    const results = await this.runCommandWithRetry(key);
 
     if (!Array.isArray(results)) {
       throw new TypeError("Expected result to be array of values");
