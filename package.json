@@ -60,7 +60,7 @@
     "cross-env": "^7.0.3",
     "del-cli": "^4.0.1",
     "dts-bundle-generator": "^6.4.0",
-    "esbuild": "^0.14.11",
+    "esbuild": "^0.18.19",
     "express": "^4.17.2",
     "express-rate-limit": "^6.1.0",
     "husky": "^7.0.4",
