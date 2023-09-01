@@ -1,7 +1,7 @@
 # <div align="center"> `rate-limit-redis` </div>
 
 <div align="center">
-	<img alt="Github Workflow Status" src="https://github.com/express-rate-limit/rate-limit-redis/actions/workflows/ci.yml/badge.svg"/>
+	<img alt="Github Workflow Status" src="https://github.com/express-rate-limit/rate-limit-redis/actions/workflows/ci.yaml/badge.svg"/>
 	<img alt="npm version" src="https://img.shields.io/npm/v/rate-limit-redis.svg"/>
 	<img alt="GitHub Stars" src="https://img.shields.io/github/stars/express-rate-limit/rate-limit-redis"/>
 	<img alt="npm downloads" src="https://img.shields.io/npm/dm/rate-limit-redis"/>

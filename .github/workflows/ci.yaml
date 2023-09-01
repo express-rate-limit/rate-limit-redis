@@ -1,3 +1,6 @@
+# /.github/workflows/ci.yaml
+# GitHub actions workflow
+
 name: CI
 
 on:
@@ -47,7 +50,7 @@ jobs:
           npm test:lib
   publish:
     name: Publish
-    needs: [lint, test-library, test-external]
+    needs: [lint, test]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
