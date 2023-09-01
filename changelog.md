@@ -6,11 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.1.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.1.0)
+
+### Changed
+
+- Retry the `EVALSHA` command if it fails the first time.
+
+## [v3.0.2](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.2)
+
+### Changed
+
+- Added the `types` field to the `export` map in `package.json`.
+
 ## [v3.0.1](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.1)
 
 ### Changed
 
-- Updated documentation related to `ioredis` integration [#48](https://github.com/wyattjoh/rate-limit-redis/pull/48)
+- Updated documentation related to `ioredis` integration.
 
 ## [v3.0.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.0)
 
