@@ -130,7 +130,7 @@ The function used to send commands to Redis. The function signature is as
 follows:
 
 ```ts
-(...args: string[]) => Promise<number> | number
+(...args: string[]) => Promise<number> | number;
 ```
 
 The raw command sending function varies from library to library; some are given
