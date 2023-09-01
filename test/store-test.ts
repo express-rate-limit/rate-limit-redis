@@ -2,28 +2,26 @@
 // The tests for the store.
 
 import { createHash } from 'node:crypto'
-
-import { jest as Jest } from '@jest/globals'
-import { Options } from 'express-rate-limit'
-import MockRedisClient, { Redis } from 'ioredis-mock'
-
-import RedisStore, { RedisReply } from '../source/index.js'
+import { jest } from '@jest/globals'
+import { type Options } from 'express-rate-limit'
+import MockRedisClient from 'ioredis-mock'
+import RedisStore, { type RedisReply } from '../source/index.js'
 
 // The SHA of the script to evaluate
 let scriptSha: string | undefined
+// The mock redis client to use.
+const client = new MockRedisClient()
 
 /**
  * A wrapper around the mock redis client to call the right function, as the
  * `ioredis-mock` library does not have a send-raw-command function.
  *
- * @param {Redis} client - The mock Redis client.
- * @param {string[]} args - The raw command to send.
+ * @param {string[]} ...args - The raw command to send.
  *
  * @return {RedisReply | RedisReply[]} The reply returned by Redis.
  */
 const sendCommand = async (
-	client: Redis,
-	args: string[],
+	...args: string[]
 ): Promise<RedisReply | RedisReply[]> => {
 	// `SCRIPT LOAD`, called when the store is initialized. This loads the lua script
 	// for incrementing a client's hit counter.
@@ -54,19 +52,14 @@ const sendCommand = async (
 
 describe('redis store test', () => {
 	// Mock timers so we can fast forward time instead of waiting for n seconds
-	// in the timer section
-	beforeEach(() => Jest.useFakeTimers('modern'))
-	afterEach(() => {
-		Jest.useRealTimers()
-		Jest.restoreAllMocks()
+	beforeEach(() => jest.useFakeTimers())
+	afterEach(async () => {
+		jest.useRealTimers()
+		await client.flushall()
 	})
 
 	it('supports custom prefixes', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-			prefix: 'test-',
-		})
+		const store = new RedisStore({ sendCommand, prefix: 'test-' })
 		store.init({ windowMs: 10 } as Options)
 
 		const key = 'store'
@@ -80,10 +73,7 @@ describe('redis store test', () => {
 	})
 
 	it('sets the value to 1 on first call to `increment`', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-		})
+		const store = new RedisStore({ sendCommand })
 		store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
@@ -98,10 +88,7 @@ describe('redis store test', () => {
 	})
 
 	it('increments the key for the store when `increment` is called', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-		})
+		const store = new RedisStore({ sendCommand })
 		store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
@@ -117,10 +104,7 @@ describe('redis store test', () => {
 	})
 
 	it('decrements the key for the store when `decrement` is called', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-		})
+		const store = new RedisStore({ sendCommand })
 		store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
@@ -138,10 +122,7 @@ describe('redis store test', () => {
 	})
 
 	it('resets the count for a key in the store when `resetKey` is called', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-		})
+		const store = new RedisStore({ sendCommand })
 		store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
@@ -159,11 +140,7 @@ describe('redis store test', () => {
 	})
 
 	it('resets expiry time on change if `resetExpiryOnChange` is set to `true`', async () => {
-		const client = new MockRedisClient()
-		const store = new RedisStore({
-			sendCommand: async (...args: string[]) => sendCommand(client, args),
-			resetExpiryOnChange: true,
-		})
+		const store = new RedisStore({ sendCommand, resetExpiryOnChange: true })
 		store.init({ windowMs: 60 } as Options)
 
 		const key = 'test-store'
@@ -177,34 +154,26 @@ describe('redis store test', () => {
 
 		await store.increment(key) // => 2
 
-		// Ensure the hit count is 1, and the expiry is 60 milliseconds (value of
+		// Ensure the hit count is 2, and the expiry is 60 milliseconds (value of
 		// `windowMs`).
 		expect(Number(await client.get('rl:test-store'))).toEqual(2)
 		expect(Number(await client.pttl('rl:test-store'))).toEqual(60)
 	})
 
-	describe('reset time', () => {
-		beforeEach(() => Jest.useFakeTimers('modern'))
-		afterEach(() => Jest.useRealTimers())
+	it('resets the count for all the keys in the store when the timeout is reached', async () => {
+		const store = new RedisStore({ sendCommand })
+		store.init({ windowMs: 50 } as Options)
 
-		it('resets the count for all the keys in the store when the timeout is reached', async () => {
-			const client = new MockRedisClient()
-			const store = new RedisStore({
-				sendCommand: async (...args: string[]) => sendCommand(client, args),
-			})
-			store.init({ windowMs: 50 } as Options)
+		const keyOne = 'test-store-one'
+		const keyTwo = 'test-store-two'
 
-			const keyOne = 'test-store-one'
-			const keyTwo = 'test-store-two'
+		await store.increment(keyOne)
+		await store.increment(keyTwo)
 
-			await store.increment(keyOne)
-			await store.increment(keyTwo)
+		jest.advanceTimersByTime(60)
 
-			Jest.advanceTimersByTime(60)
-
-			// Ensure that the keys have been deleted
-			expect(await client.get('rl:test-store-one')).toEqual(null)
-			expect(await client.get('rl:test-store-two')).toEqual(null)
-		})
+		// Ensure that the keys have been deleted
+		expect(await client.get('rl:test-store-one')).toEqual(null)
+		expect(await client.get('rl:test-store-two')).toEqual(null)
 	})
 })

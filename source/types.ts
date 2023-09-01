@@ -17,7 +17,7 @@ export type SendCommandFn = (
 /**
  * The configuration options for the store.
  */
-export interface Options {
+export type Options = {
 	/**
 	 * The function used to send commands to Redis.
 	 */

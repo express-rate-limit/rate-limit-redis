@@ -1,13 +1,12 @@
 // /source/lib.ts
 // The redis store code.
 
-import {
+import type {
 	Store,
 	IncrementResponse,
 	Options as RateLimitConfiguration,
 } from 'express-rate-limit'
-
-import { Options, SendCommandFn } from './types.js'
+import { type Options, type SendCommandFn } from './types.js'
 
 /**
  * A `Store` for the `express-rate-limit` package that stores hit counts in
@@ -72,10 +71,10 @@ class RedisStore implements Store {
         end
 
         return { totalHits, timeToExpire }
-    `
+    	`
 				// Ensure that code changes that affect whitespace do not affect
 				// the script contents.
-				.replace(/^\s+/gm, '')
+				.replaceAll(/^\s+/gm, '')
 				.trim(),
 		)
 
