@@ -3,11 +3,7 @@
 
 name: CI
 
-on:
-  pull_request:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   lint:
@@ -19,18 +15,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - name: Use Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org/'
       - name: Check for lint/formatting errors
         run: |
           npm ci
           npm run lint
-  test:
-    name: Test
+  test-library:
+    name: Test (Library)
     strategy:
       matrix:
         node-version: [lts/gallium, lts/*, latest]
@@ -38,19 +33,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/checkout@v3
+      - name: Use Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org/'
       - name: Run library tests
         run: |
           npm ci
-          npm test:lib
+          npm run test:lib
   publish:
     name: Publish
-    needs: [lint, test]
+    needs: [lint, test-library]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
