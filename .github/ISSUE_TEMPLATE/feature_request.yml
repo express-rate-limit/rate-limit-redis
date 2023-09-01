@@ -17,12 +17,14 @@ body:
   - type: textarea
     attributes:
       label: Why
-      description: Why should we add this feature? What are potential use cases for it?
+      description:
+        Why should we add this feature? What are potential use cases for it?
     validations:
       required: true
   - type: textarea
     attributes:
       label: Alternatives
-      description: Describe the alternatives you have considered, or existing workarounds
+      description:
+        Describe the alternatives you have considered, or existing workarounds
     validations:
       required: true

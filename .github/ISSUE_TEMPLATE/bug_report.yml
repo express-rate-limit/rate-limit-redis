@@ -50,6 +50,7 @@ body:
   - type: input
     attributes:
       label: Redis Client
-      description: Which Redis client do you use to connect with the Redis server?
+      description:
+        Which Redis client do you use to connect with the Redis server?
     validations:
       required: true

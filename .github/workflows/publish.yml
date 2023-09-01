@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
   publish:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16
-          registry-url: "https://registry.npmjs.org/"
+          registry-url: 'https://registry.npmjs.org/'
       - name: Install dependencies
         run: npm install
       - name: Publish package to NPM
@@ -31,5 +31,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: rate-limit-redis.tgz
-          body: You can view the changelog
+          body:
+            You can view the changelog
             [here](https://github.com/wyattjoh/rate-limit-redis/blob/main/changelog.md).

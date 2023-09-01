@@ -1,15 +1,5 @@
 {
-  "include": ["src/"],
-  "exclude": ["node_modules/"],
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "declaration": true,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true
-  }
+	"include": ["source/"],
+	"exclude": ["node_modules/"],
+	"extends": "@express-rate-limit/tsconfig"
 }

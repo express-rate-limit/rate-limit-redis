@@ -109,9 +109,9 @@ rate-limit-redis
 
 When adding a new feature/fixing a bug, please add/update the readme and
 changelog as well as add tests for the same. Also make sure your code has been
-linted and that existing tests pass. You can run the linter using `npm run lint`,
-the tests using `npm run test` and try to automatically fix most lint issues using
-`npm run autofix`.
+linted and that existing tests pass. You can run the linter using
+`npm run lint`, the tests using `npm run test` and try to automatically fix most
+lint issues using `npm run autofix`.
 
 Once you have made changes to the code, you will want to
 [`commit`](https://github.com/git-guides/git-commit) (basically, Git's version
@@ -164,8 +164,8 @@ your branch to include those changes. To rebase, or include the changes from the
 ```
 
 This will automatically add the changes from `main` branch of the
-`express-rate-limit/rate-limit-redis` repository to the current branch. If you encounter
-any merge conflicts, follow
+`express-rate-limit/rate-limit-redis` repository to the current branch. If you
+encounter any merge conflicts, follow
 [this guide](https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase)
 to resolve them.
 
