@@ -7,8 +7,8 @@
     "url": "https://github.com/wyattjoh"
   },
   "license": "MIT",
-  "homepage": "https://github.com/wyattjoh/rate-limit-redis",
-  "repository": "https://github.com/wyattjoh/rate-limit-redis",
+  "homepage": "https://github.com/express-rate-limit/rate-limit-redis",
+  "repository": "https://github.com/express-rate-limit/rate-limit-redis",
   "type": "module",
   "exports": {
     ".": {

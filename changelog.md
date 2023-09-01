@@ -6,25 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v3.1.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.1.0)
+## [v3.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v3.1.0)
 
 ### Changed
 
 - Retry the `EVALSHA` command if it fails the first time.
 
-## [v3.0.2](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.2)
+## [v3.0.2](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v3.0.2)
 
 ### Changed
 
 - Added the `types` field to the `export` map in `package.json`.
 
-## [v3.0.1](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.1)
+## [v3.0.1](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v3.0.1)
 
 ### Changed
 
 - Updated documentation related to `ioredis` integration.
 
-## [v3.0.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v3.0.0)
+## [v3.0.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v3.0.0)
 
 ### Added
 
@@ -54,7 +54,7 @@ and this project adheres to
 - [BREAKING] Removed the `passIfNotConnected` option, as developers now need to
   handle connection using a client of their choice
 
-## [v2.1.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v2.1.0)
+## [v2.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v2.1.0)
 
 ### Added
 
@@ -66,27 +66,27 @@ and this project adheres to
 
 - Dropped support for Node 6.
 
-## [v2.0.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v2.0.0)
+## [v2.0.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v2.0.0)
 
 ### Changed
 
 - [BREAKING] Bumped `node-redis` version from `2.8.0` to `3.0.2`.
 
-## [v1.7.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.7.0)
+## [v1.7.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.7.0)
 
 ### Added
 
 - Added support for passing a redis connection string instead of a client
   instance to the constructor.
 
-## [v1.6.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.6.0)
+## [v1.6.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.6.0)
 
 ### Added
 
 - Added example of connecting to a UDP socket to the readme.
 - Added support for returning the reset date to the rate limit middleware.
 
-## [v1.5.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.5.0)
+## [v1.5.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.5.0)
 
 ### Added
 
@@ -96,20 +96,20 @@ and this project adheres to
     in the rate limiting middleware displays the time in the `Retry-After`
     header.
 
-## [v1.4.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.4.0)
+## [v1.4.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.4.0)
 
 ### Added
 
 - Added support for the `decrement` and `reset` functions (see
   https://github.com/nfriedly/express-rate-limit/commit/c9194780b6826d9cdb14b3395907cf7fb93e59f6)
 
-## [v1.3.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.3.0)
+## [v1.3.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.3.0)
 
 ### Added
 
 - Added support for millisecond precision in the `expiry` option.
 
-## [v1.1.0](https://github.com/wyattjoh/rate-limit-redis/releases/tag/v1.1.0)
+## [v1.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v1.1.0)
 
 ### Added
 

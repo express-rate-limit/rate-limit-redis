@@ -21,10 +21,10 @@ Once you have installed the above, follow
 to
 [`fork`](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks)
 and [`clone`](https://github.com/git-guides/git-clone) the repository
-(`wyattjoh/rate-limit-redis`).
+(`express-rate-limit/rate-limit-redis`).
 
 Once you have forked and cloned the repository, you can
-[pick out an issue](https://github.com/wyattjoh/rate-limit-redis/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
+[pick out an issue](https://github.com/express-rate-limit/rate-limit-redis/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
 you want to fix/implement!
 
 ## Making Changes
@@ -153,10 +153,10 @@ changes to GitHub) your commits. To push your changes to your fork:
 ```
 
 If there are changes made to the `main` branch of the
-`wyattjoh/rate-limit-redis` repository, you may wish to
+`express-rate-limit/rate-limit-redis` repository, you may wish to
 [`rebase`](https://docs.github.com/en/get-started/using-git/about-git-rebase)
 your branch to include those changes. To rebase, or include the changes from the
-`main` branch of the `wyattjoh/rate-limit-redis` repository:
+`main` branch of the `express-rate-limit/rate-limit-redis` repository:
 
 ```
 > git fetch upstream main
@@ -164,7 +164,7 @@ your branch to include those changes. To rebase, or include the changes from the
 ```
 
 This will automatically add the changes from `main` branch of the
-`wyattjoh/rate-limit-redis` repository to the current branch. If you encounter
+`express-rate-limit/rate-limit-redis` repository to the current branch. If you encounter
 any merge conflicts, follow
 [this guide](https://docs.github.com/en/get-started/using-git/resolving-merge-conflicts-after-a-git-rebase)
 to resolve them.

@@ -1,9 +1,9 @@
 # <div align="center"> `rate-limit-redis` </div>
 
 <div align="center">
-	<img alt="Github Workflow Status" src="https://img.shields.io/github/workflow/status/wyattjoh/rate-limit-redis/CI"/>
+	<img alt="Github Workflow Status" src="https://github.com/express-rate-limit/rate-limit-redis/actions/workflows/ci.yml/badge.svg"/>
 	<img alt="npm version" src="https://img.shields.io/npm/v/rate-limit-redis.svg"/>
-	<img alt="GitHub Stars" src="https://img.shields.io/github/stars/wyattjoh/rate-limit-redis"/>
+	<img alt="GitHub Stars" src="https://img.shields.io/github/stars/express-rate-limit/rate-limit-redis"/>
 	<img alt="npm downloads" src="https://img.shields.io/npm/dm/rate-limit-redis"/>
 </div>
 
@@ -32,9 +32,9 @@ From Github Releases:
 
 ```sh
 # Using npm
-> npm install https://github.com/wyattjoh/rate-limit-redis/releases/download/v{version}/rate-limit-redis.tgz
+> npm install https://github.com/express-rate-limit/rate-limit-redis/releases/download/v{version}/rate-limit-redis.tgz
 # Using yarn or pnpm
-> yarn/pnpm add https://github.com/wyattjoh/rate-limit-redis/releases/download/v{version}/rate-limit-redis.tgz
+> yarn/pnpm add https://github.com/express-rate-limit/rate-limit-redis/releases/download/v{version}/rate-limit-redis.tgz
 ```
 
 Replace `{version}` with the version of the package that you want to your, e.g.:
