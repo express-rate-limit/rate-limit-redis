@@ -3,7 +3,7 @@
 
 import type {
 	Store,
-	IncrementResponse,
+	ClientRateLimitInfo,
 	Options as RateLimitConfiguration,
 } from 'express-rate-limit'
 import { type Options, type SendCommandFn } from './types.js'
@@ -131,9 +131,9 @@ class RedisStore implements Store {
 	 *
 	 * @param key {string} - The identifier for a client
 	 *
-	 * @returns {IncrementResponse} - The number of hits and reset time for that client
+	 * @returns {ClientRateLimitInfo} - The number of hits and reset time for that client
 	 */
-	async increment(key: string): Promise<IncrementResponse> {
+	async increment(key: string): Promise<ClientRateLimitInfo> {
 		const results = await this.runCommandWithRetry(key)
 
 		if (!Array.isArray(results)) {

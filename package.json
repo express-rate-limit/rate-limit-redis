@@ -52,7 +52,7 @@
     "prepare": "run-s compile && husky install config/husky"
   },
   "peerDependencies": {
-    "express-rate-limit": "6"
+    "express-rate-limit": "6.11.1"
   },
   "devDependencies": {
     "@express-rate-limit/prettier": "1.1.0",
