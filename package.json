@@ -46,7 +46,7 @@
     "format:code": "xo --fix",
     "format:rest": "prettier --write .",
     "format": "run-s format:*",
-    "test:lib": "cross-env NODE_OPTIONS=\"--experimental-vm-modules\" jest --config config/jest.json",
+    "test:lib": "jest",
     "test": "run-s lint test:*",
     "pre-commit": "lint-staged",
     "prepare": "run-s compile && husky install config/husky"
