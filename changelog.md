@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.0.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v4.0.0)
+
+### Breaking
+
+- Dropped `node` v14 support.
+- Added support for `express-rate-limit` v7.
+
+### Changed
+
+- Use `pkgroll` to bundle library.
+- Bumped dependencies.
+
 ## [v3.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v3.1.0)
 
 ### Changed
