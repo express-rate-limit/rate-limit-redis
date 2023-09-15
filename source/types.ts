@@ -33,4 +33,10 @@ export type Options = {
 	 * changes.
 	 */
 	readonly resetExpiryOnChange?: boolean
+
+	/**
+	 * Whether or not to let the request succeed as a failover when a connection
+	 * error occurs.
+	 */
+	readonly passOnConnectionError?: boolean
 }
