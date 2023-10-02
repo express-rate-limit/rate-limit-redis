@@ -4,9 +4,43 @@
 import type {
 	Store,
 	IncrementResponse,
+	ClientRateLimitInfo,
 	Options as RateLimitConfiguration,
 } from 'express-rate-limit'
-import { type Options, type SendCommandFn } from './types.js'
+import scripts from './scripts.js'
+import type { Options, SendCommandFn, RedisReply } from './types.js'
+
+/**
+ * Converts a string/number to a number.
+ *
+ * @param input {string | number | undefined} - The input to convert to a number.
+ *
+ * @return {number} - The parsed integer.
+ * @throws {Error} - Thrown if the string does not contain a valid number.
+ */
+const toInt = (input: string | number | boolean | undefined): number => {
+	if (typeof input === 'number') return input
+	return Number.parseInt((input ?? '').toString(), 10)
+}
+
+/**
+ * Parses the response from the script.
+ *
+ * Note that the responses returned by the `get` and `increment` scripts are
+ * the same, so this function can be used with both.
+ */
+const parseScriptResponse = (results: RedisReply): ClientRateLimitInfo => {
+	if (!Array.isArray(results))
+		throw new TypeError('Expected result to be array of values')
+	if (results.length !== 2)
+		throw new Error(`Expected 2 replies, got ${results.length}`)
+
+	const totalHits = toInt(results[0] === false ? 0 : results[0])
+	const timeToExpire = toInt(results[1])
+
+	const resetTime = new Date(Date.now() + timeToExpire)
+	return { totalHits, resetTime }
+}
 
 /**
  * A `Store` for the `express-rate-limit` package that stores hit counts in
@@ -30,9 +64,11 @@ class RedisStore implements Store {
 	resetExpiryOnChange: boolean
 
 	/**
-	 * Stores the loaded SHA1 of the LUA script for executing the increment operations.
+	 * Stores the loaded SHA1s of the LUA scripts used for executing the increment
+	 * and get key operations.
 	 */
-	loadedScriptSha1: Promise<string>
+	incrementScriptSha: Promise<string>
+	getScriptSha: Promise<string>
 
 	/**
 	 * The number of milliseconds to remember that user's requests.
@@ -51,38 +87,61 @@ class RedisStore implements Store {
 
 		// So that the script loading can occur non-blocking, this will send
 		// the script to be loaded, and will capture the value within the
-		// promise return. This way, if increments start being called before
+		// promise return. This way, if increment/get start being called before
 		// the script has finished loading, it will wait until it is loaded
 		// before it continues.
-		this.loadedScriptSha1 = this.loadScript()
+		this.incrementScriptSha = this.loadIncrementScript()
+		this.getScriptSha = this.loadGetScript()
 	}
 
-	async loadScript(): Promise<string> {
-		const result = await this.sendCommand(
-			'SCRIPT',
-			'LOAD',
-			`
-        local totalHits = redis.call("INCR", KEYS[1])
-        local timeToExpire = redis.call("PTTL", KEYS[1])
-        if timeToExpire <= 0 or ARGV[1] == "1"
-        then
-            redis.call("PEXPIRE", KEYS[1], tonumber(ARGV[2]))
-            timeToExpire = tonumber(ARGV[2])
-        end
-
-        return { totalHits, timeToExpire }
-    	`
-				// Ensure that code changes that affect whitespace do not affect
-				// the script contents.
-				.replaceAll(/^\s+/gm, '')
-				.trim(),
-		)
+	/**
+	 * Loads the script used to increment a client's hit count.
+	 */
+	async loadIncrementScript(): Promise<string> {
+		const result = await this.sendCommand('SCRIPT', 'LOAD', scripts.increment)
 
 		if (typeof result !== 'string') {
 			throw new TypeError('unexpected reply from redis client')
 		}
 
 		return result
+	}
+
+	/**
+	 * Loads the script used to fetch a client's hit count and expiry time.
+	 */
+	async loadGetScript(): Promise<string> {
+		const result = await this.sendCommand('SCRIPT', 'LOAD', scripts.get)
+
+		if (typeof result !== 'string') {
+			throw new TypeError('unexpected reply from redis client')
+		}
+
+		return result
+	}
+
+	/**
+	 * Runs the increment command, and retries it if the script is not loaded.
+	 */
+	async retryableIncrement(key: string): Promise<RedisReply> {
+		const evalCommand = async () =>
+			this.sendCommand(
+				'EVALSHA',
+				await this.incrementScriptSha,
+				'1',
+				this.prefixKey(key),
+				this.resetExpiryOnChange ? '1' : '0',
+				this.windowMs.toString(),
+			)
+
+		try {
+			const result = await evalCommand()
+			return result
+		} catch {
+			// TODO: distinguish different error types
+			this.incrementScriptSha = this.loadIncrementScript()
+			return evalCommand()
+		}
 	}
 
 	/**
@@ -105,25 +164,22 @@ class RedisStore implements Store {
 		this.windowMs = options.windowMs
 	}
 
-	async runCommandWithRetry(key: string) {
-		const evalCommand = async () =>
-			this.sendCommand(
-				'EVALSHA',
-				await this.loadedScriptSha1,
-				'1',
-				this.prefixKey(key),
-				this.resetExpiryOnChange ? '1' : '0',
-				this.windowMs.toString(),
-			)
+	/**
+	 * Method to fetch a client's hit count and reset time.
+	 *
+	 * @param key {string} - The identifier for a client.
+	 *
+	 * @returns {ClientRateLimitInfo | undefined} - The number of hits and reset time for that client.
+	 */
+	async get(key: string): Promise<ClientRateLimitInfo | undefined> {
+		const results = await this.sendCommand(
+			'EVALSHA',
+			await this.getScriptSha,
+			'1',
+			this.prefixKey(key),
+		)
 
-		try {
-			const result = await evalCommand()
-			return result
-		} catch {
-			// TODO: distinguish different error types
-			this.loadedScriptSha1 = this.loadScript()
-			return evalCommand()
-		}
+		return parseScriptResponse(results)
 	}
 
 	/**
@@ -134,31 +190,8 @@ class RedisStore implements Store {
 	 * @returns {IncrementResponse} - The number of hits and reset time for that client
 	 */
 	async increment(key: string): Promise<IncrementResponse> {
-		const results = await this.runCommandWithRetry(key)
-
-		if (!Array.isArray(results)) {
-			throw new TypeError('Expected result to be array of values')
-		}
-
-		if (results.length !== 2) {
-			throw new Error(`Expected 2 replies, got ${results.length}`)
-		}
-
-		const totalHits = results[0]
-		if (typeof totalHits !== 'number') {
-			throw new TypeError('Expected value to be a number')
-		}
-
-		const timeToExpire = results[1]
-		if (typeof timeToExpire !== 'number') {
-			throw new TypeError('Expected value to be a number')
-		}
-
-		const resetTime = new Date(Date.now() + timeToExpire)
-		return {
-			totalHits,
-			resetTime,
-		}
+		const results = await this.retryableIncrement(key)
+		return parseScriptResponse(results)
 	}
 
 	/**
@@ -180,4 +213,5 @@ class RedisStore implements Store {
 	}
 }
 
+// Export it to the world!
 export default RedisStore
