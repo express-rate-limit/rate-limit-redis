@@ -2,13 +2,11 @@
 // The tests for the store.
 
 import { createHash } from 'node:crypto'
-import { jest } from '@jest/globals'
+import { expect, jest } from '@jest/globals'
 import { type Options } from 'express-rate-limit'
 import MockRedisClient from 'ioredis-mock'
 import RedisStore, { type RedisReply } from '../source/index.js'
 
-// The SHA of the script to evaluate
-let scriptSha: string | undefined
 // The mock redis client to use.
 const client = new MockRedisClient()
 
@@ -18,11 +16,9 @@ const client = new MockRedisClient()
  *
  * @param {string[]} ...args - The raw command to send.
  *
- * @return {RedisReply | RedisReply[]} The reply returned by Redis.
+ * @return {RedisReply} The reply returned by Redis.
  */
-const sendCommand = async (
-	...args: string[]
-): Promise<RedisReply | RedisReply[]> => {
+const sendCommand = async (...args: string[]): Promise<RedisReply> => {
 	// `SCRIPT LOAD`, called when the store is initialized. This loads the lua script
 	// for incrementing a client's hit counter.
 	if (args[0] === 'SCRIPT') {
@@ -30,17 +26,23 @@ const sendCommand = async (
 		// the SHA manually and `EVAL` the script to get it saved.
 		const shasum = createHash('sha1')
 		shasum.update(args[2])
-		scriptSha = shasum.digest('hex')
-		await client.eval(args[2], 1, '__test', '0', '100')
+		const sha = shasum.digest('hex')
+
+		const testArgs = args[2].includes('INCR')
+			? ['__test_incr', '0', '10']
+			: ['__test_get']
+		await client.eval(args[2], 1, ...testArgs)
 
 		// Return the SHA to the store.
-		return scriptSha
+		return sha
 	}
 
 	// `EVALSHA` executes the script that was loaded already with the given arguments
-	if (args[0] === 'EVALSHA')
+	if (args[0] === 'EVALSHA') {
 		// @ts-expect-error Wrong types :/
-		return client.evalsha(scriptSha!, ...args.slice(2)) as number[]
+		return client.evalsha(...args.slice(1)) as number[]
+	}
+
 	// `DECR` decrements the count for a client.
 	if (args[0] === 'DECR') return client.decr(args[1])
 	// `DEL` resets the count for a client by deleting the key.
@@ -128,6 +130,7 @@ describe('redis store test', () => {
 		const key = 'test-store'
 
 		await store.increment(key) // => 1
+		await store.increment(key) // => 2
 		await store.resetKey(key) // => undefined
 
 		const { totalHits } = await store.increment(key) // => 1
@@ -137,6 +140,23 @@ describe('redis store test', () => {
 		expect(totalHits).toEqual(1)
 		expect(Number(await client.get('rl:test-store'))).toEqual(1)
 		expect(Number(await client.pttl('rl:test-store'))).toEqual(10)
+	})
+
+	it('fetches the count for a key in the store when `getKey` is called', async () => {
+		const store = new RedisStore({ sendCommand })
+		store.init({ windowMs: 10 } as Options)
+
+		const key = 'test-store'
+
+		await store.increment(key) // => 1
+		await store.increment(key) // => 2
+		const info = await store.get(key)
+
+		// Ensure the hit count is 1, and that `resetTime` is a date.
+		expect(info).toMatchObject({
+			totalHits: 2,
+			resetTime: expect.any(Date),
+		})
 	})
 
 	it('resets expiry time on change if `resetExpiryOnChange` is set to `true`', async () => {
