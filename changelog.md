@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v4.1.0)
+
+### Added
+
+- Added the `store.get()` function, to retrieve the hit count and reset time for
+  a particular client.
+
 ## [v4.0.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v4.0.0)
 
 ### Breaking
