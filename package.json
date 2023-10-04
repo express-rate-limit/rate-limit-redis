@@ -1,6 +1,6 @@
 {
   "name": "rate-limit-redis",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "A Redis store for the `express-rate-limit` middleware",
   "author": {
     "name": "Wyatt Johnson",
