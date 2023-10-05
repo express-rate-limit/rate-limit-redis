@@ -37,7 +37,7 @@ From Github Releases:
 > yarn/pnpm add https://github.com/express-rate-limit/rate-limit-redis/releases/download/v{version}/rate-limit-redis.tgz
 ```
 
-Replace `{version}` with the version of the package that you want to your, e.g.:
+Replace `{version}` with the version of the package that you want to use, e.g.:
 `3.0.0`.
 
 ## Usage
