@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.1.1](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v4.1.1)
+
+### Fixed
+
+- `store.get()` returns 0 instead of `NaN` if there are no hits stored for the
+  client.
+
 ## [v4.1.0](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v4.1.0)
 
 ### Added
