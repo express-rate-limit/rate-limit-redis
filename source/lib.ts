@@ -35,7 +35,7 @@ const parseScriptResponse = (results: RedisReply): ClientRateLimitInfo => {
 	if (results.length !== 2)
 		throw new Error(`Expected 2 replies, got ${results.length}`)
 
-	const totalHits = toInt(results[0])
+	const totalHits = results[0] === false ? 0 : toInt(results[0])
 	const timeToExpire = toInt(results[1])
 
 	const resetTime = new Date(Date.now() + timeToExpire)
