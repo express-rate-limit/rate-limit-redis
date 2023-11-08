@@ -5,7 +5,10 @@ import { createHash } from 'node:crypto'
 import { expect, jest } from '@jest/globals'
 import { type Options } from 'express-rate-limit'
 import MockRedisClient from 'ioredis-mock'
-import RedisStore, { type RedisReply } from '../source/index.js'
+import DefaultExportRedisStore, {
+	RedisStore,
+	type RedisReply,
+} from '../source/index.js'
 
 // The mock redis client to use.
 const client = new MockRedisClient()
@@ -195,5 +198,20 @@ describe('redis store test', () => {
 		// Ensure that the keys have been deleted
 		expect(await client.get('rl:test-store-one')).toEqual(null)
 		expect(await client.get('rl:test-store-two')).toEqual(null)
+	})
+
+	it('default export works', async () => {
+		const store = new DefaultExportRedisStore({ sendCommand })
+		store.init({ windowMs: 10 } as Options)
+
+		const key = 'test-store'
+
+		const { totalHits } = await store.increment(key) // => 1
+
+		// Ensure the hit count is 1, and the expiry is 10 milliseconds (value of
+		// `windowMs`).
+		expect(totalHits).toEqual(1)
+		expect(Number(await client.get('rl:test-store'))).toEqual(1)
+		expect(Number(await client.pttl('rl:test-store'))).toEqual(10)
 	})
 })

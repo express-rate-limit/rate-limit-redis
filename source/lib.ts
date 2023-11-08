@@ -46,7 +46,7 @@ const parseScriptResponse = (results: RedisReply): ClientRateLimitInfo => {
  * A `Store` for the `express-rate-limit` package that stores hit counts in
  * Redis.
  */
-class RedisStore implements Store {
+export class RedisStore implements Store {
 	/**
 	 * The function used to send raw commands to Redis.
 	 */

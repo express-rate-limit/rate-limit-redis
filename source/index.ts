@@ -5,4 +5,4 @@
 export * from './types.js'
 
 // Export the RedisStore class as the default export
-export { default } from './lib.js'
+export { default, RedisStore } from './lib.js'
