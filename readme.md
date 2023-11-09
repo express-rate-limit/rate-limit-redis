@@ -53,13 +53,13 @@ Import it in a CommonJS project (`type: commonjs` or no `type` field in
 `package.json`) as follows:
 
 ```ts
-const RedisStore = require('rate-limit-redis')
+const { RedisStore } = require('rate-limit-redis')
 ```
 
 Import it in a ESM project (`type: module` in `package.json`) as follows:
 
 ```ts
-import RedisStore from 'rate-limit-redis'
+import { RedisStore } from 'rate-limit-redis'
 ```
 
 ### Examples
@@ -67,8 +67,8 @@ import RedisStore from 'rate-limit-redis'
 To use it with a [`node-redis`](https://github.com/redis/node-redis) client:
 
 ```ts
-import rateLimit from 'express-rate-limit'
-import RedisStore from 'rate-limit-redis'
+import { rateLimit } from 'express-rate-limit'
+import { RedisStore } from 'rate-limit-redis'
 import { createClient } from 'redis'
 
 // Create a `node-redis` client
@@ -97,8 +97,8 @@ app.use(limiter)
 To use it with a [`ioredis`](https://github.com/luin/ioredis) client:
 
 ```ts
-import rateLimit from 'express-rate-limit'
-import RedisStore from 'rate-limit-redis'
+import { rateLimit } from 'express-rate-limit'
+import { RedisStore } from 'rate-limit-redis'
 import RedisClient from 'ioredis'
 
 // Create a `ioredis` client
