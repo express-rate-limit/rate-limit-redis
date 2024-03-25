@@ -11,7 +11,8 @@
 
 <div align="center">
 
-A [`redis`](https://github.com/redis/redis) store for the
+A [`redict`](https://redict.io/) & [`redis`](https://github.com/redis/redis)
+store for the
 [`express-rate-limit`](https://github.com/nfriedly/express-rate-limit)
 middleware.
 
@@ -148,7 +149,7 @@ below:
 
 #### `prefix`
 
-The text to prepend to the key in Redis.
+The text to prepend to the key in Redict/Redis.
 
 Defaults to `rl:`.
 
