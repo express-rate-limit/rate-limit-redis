@@ -11,10 +11,10 @@
 
 <div align="center">
 
-A [`redict`](https://redict.io/) & [`redis`](https://github.com/redis/redis)
-store for the
+A [`redis`](https://github.com/redis/redis) store for the
 [`express-rate-limit`](https://github.com/nfriedly/express-rate-limit)
-middleware.
+middleware. Also supports [`redict`](https://redict.io/) &
+[`valkey`](https://valkey.io/).
 
 </div>
 
