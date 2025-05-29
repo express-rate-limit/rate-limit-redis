@@ -200,6 +200,28 @@ describe('redis store test', () => {
 		expect(await client.get('rl:test-store-two')).toEqual(null)
 	})
 
+	it.skip('do not reset the expiration when the ttl is very close to 0', async () => {
+		const store = new RedisStore({ sendCommand })
+		const windowMs = 60
+		store.init({ windowMs } as Options)
+
+		const key = 'test-store'
+		await store.increment(key)
+
+		// FIXME: This makes the mock client return ttl = 1, not 0. So does setting
+		// the ttl via client.pexpire to 1. Setting the ttl to 0 makes it expire
+		// instantly, so the ttl returned is -2. If you can figure out a way to
+		// consistently reproduce the close-to-0 behaviour with the mock client,
+		// replace the advanceTimersByTime call with it.
+		jest.advanceTimersByTime(59)
+		await store.increment(key)
+
+		// Ensure the hit count is 2, and the expiry is not reset
+		expect(Number(await client.pttl('rl:test-store'))).not.toEqual(windowMs)
+		expect(Number(await client.pttl('rl:test-store'))).toBeLessThanOrEqual(0)
+		expect(Number(await client.get('rl:test-store'))).toEqual(2)
+	})
+
 	it('default export works', async () => {
 		const store = new DefaultExportRedisStore({ sendCommand })
 		store.init({ windowMs: 10 } as Options)
