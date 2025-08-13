@@ -99,7 +99,7 @@ To use it with a [`ioredis`](https://github.com/luin/ioredis) client:
 
 ```ts
 import { rateLimit } from 'express-rate-limit'
-import { RedisStore } from 'rate-limit-redis'
+import { RedisStore, type RedisReply } from 'rate-limit-redis'
 import RedisClient from 'ioredis'
 
 // Create a `ioredis` client
@@ -117,7 +117,7 @@ const limiter = rateLimit({
 	// Redis store configuration
 	store: new RedisStore({
 		sendCommand: (command: string, ...args: string[]) =>
-			client.send_command(command, ...args),
+			client.call(command, ...args) as Promise<RedisReply>,
 	}),
 })
 app.use(limiter)
@@ -141,7 +141,7 @@ below:
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                               |
 | [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args) => cluster.sendCommand(undefined, false, args)`                      |
-| [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.send_command(command, ...args)` |
+| [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)`         |
 | [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`                     |
 | [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                                |
 | [`redis-fast-driver`](https://github.com/h0x91b/redis-fast-driver) | `async (...args: string[]) => client.rawCallAsync(args)`                              |
