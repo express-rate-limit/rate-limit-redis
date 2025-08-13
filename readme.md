@@ -137,16 +137,16 @@ follows:
 The raw command sending function varies from library to library; some are given
 below:
 
-| Library                                                            | Function                                                                            |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                             |
-| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args) => cluster.sendCommand(args[1], false, args)`                      |
-| [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)`       |
-| [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`                   |
-| [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                              |
-| [`redis-fast-driver`](https://github.com/h0x91b/redis-fast-driver) | `async (...args: string[]) => client.rawCallAsync(args)`                            |
-| [`yoredis`](https://github.com/djanowski/yoredis)                  | `async (...args: string[]) => (await client.callMany([args]))[0]`                   |
-| [`noderis`](https://github.com/wallneradam/noderis)                | `async (...args: string[]) => client.callRedis(...args)`                            |
+| Library                                                            | Function                                                                      |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                       |
+| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args) => cluster.sendCommand(args[1], false, args)`                |
+| [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)` |
+| [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`             |
+| [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                        |
+| [`redis-fast-driver`](https://github.com/h0x91b/redis-fast-driver) | `async (...args: string[]) => client.rawCallAsync(args)`                      |
+| [`yoredis`](https://github.com/djanowski/yoredis)                  | `async (...args: string[]) => (await client.callMany([args]))[0]`             |
+| [`noderis`](https://github.com/wallneradam/noderis)                | `async (...args: string[]) => client.callRedis(...args)`                      |
 
 #### `prefix`
 
