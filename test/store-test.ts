@@ -200,6 +200,28 @@ describe('redis store test', () => {
 		expect(await client.get('rl:test-store-two')).toEqual(null)
 	})
 
+	it('starts new window with count 1 when TTL expired (race fix)', async () => {
+		const store = new RedisStore({ sendCommand })
+		const windowMs = 50
+		store.init({ windowMs } as Options)
+
+		const key = 'test-expired-window'
+
+		// First hit in first window
+		const first = await store.increment(key)
+		expect(first.totalHits).toEqual(1)
+		expect(Number(await client.pttl(`rl:${key}`))).toEqual(windowMs)
+
+		// Advance beyond expiry so Redis reports expired (-2)
+		jest.advanceTimersByTime(windowMs + 1)
+
+		// Next increment should start a fresh window with count=1 and TTL reset
+		const afterExpiry = await store.increment(key)
+		expect(afterExpiry.totalHits).toEqual(1)
+		expect(Number(await client.get(`rl:${key}`))).toEqual(1)
+		expect(Number(await client.pttl(`rl:${key}`))).toEqual(windowMs)
+	})
+
 	it.skip('do not reset the expiration when the ttl is very close to 0', async () => {
 		const store = new RedisStore({ sendCommand })
 		const windowMs = 60
@@ -235,5 +257,92 @@ describe('redis store test', () => {
 		expect(totalHits).toEqual(1)
 		expect(Number(await client.get('rl:test-store'))).toEqual(1)
 		expect(Number(await client.pttl('rl:test-store'))).toEqual(10)
+	})
+
+	it('unit: when PTTL==0 but key exists, script starts new window with 1', async () => {
+		// In-memory fake Redis state for a single key
+		const state: { value: number; ttl: number } = { value: 0, ttl: -2 }
+		let loadedIncrementScript = ''
+
+		// Stub that simulates Redis primitives and applies logic depending on script order
+		const sendCommandStub = async (...args: string[]): Promise<RedisReply> => {
+			const [command, ...rest] = args
+			if (command === 'SCRIPT' && rest[0] === 'LOAD') {
+				const scriptBody = rest[1]
+				if (scriptBody.includes('INCR')) loadedIncrementScript = scriptBody
+				// Return a fake sha
+				return 'sha-' + (scriptBody.includes('INCR') ? 'incr' : 'get')
+			}
+
+			if (command === 'EVALSHA') {
+				const sha = rest[0]
+				const numberKeys = rest[1]
+				const key = rest[2]
+				const resetOnChange = rest[3] === '1'
+				const windowMs = Number(rest[4])
+				if (sha.endsWith('incr') && numberKeys === '1' && key) {
+					// Determine algorithm: does the script read PTTL before INCR?
+					const pttlIndex = loadedIncrementScript.indexOf('PTTL')
+					const incrIndex = loadedIncrementScript.indexOf('INCR')
+
+					let totalHits = 0
+					let { ttl } = state
+
+					if (pttlIndex > -1 && incrIndex > -1 && pttlIndex < incrIndex) {
+						// NEW script: check ttl first
+						if (ttl <= 0) {
+							state.value = 1
+							state.ttl = windowMs
+							totalHits = 1
+							ttl = windowMs
+						} else {
+							state.value += 1
+							totalHits = state.value
+							if (resetOnChange) state.ttl = windowMs
+							ttl = state.ttl
+						}
+					} else {
+						// OLD script: INCR first, then PTTL; only resets when ttl<0
+						state.value += 1
+						totalHits = state.value
+						// Read pttl after incr; here ttl is 0 (exists but expired)
+						if (ttl < 0 || resetOnChange) {
+							state.ttl = windowMs
+							ttl = windowMs
+						} else {
+							// Ttl == 0 branch
+							ttl = 0
+						}
+					}
+
+					return [totalHits as unknown as number, ttl as unknown as number]
+				}
+			}
+
+			// Fallback for get script
+			if (command === 'EVALSHA' && args[0].endsWith('get')) {
+				return [
+					state.value as unknown as number,
+					state.ttl as unknown as number,
+				]
+			}
+
+			return -99
+		}
+
+		const store = new RedisStore({ sendCommand: sendCommandStub })
+		store.init({ windowMs: 60 } as Options)
+
+		const key = 'pttl-zero-exists'
+
+		// First increment to create key with value=1 and ttl=60
+		await store.increment(key)
+		state.value = 1
+		state.ttl = 0 // Simulate edge: key still exists but PTTL==0 exactly
+
+		const result = await store.increment(key)
+
+		// With NEW script we expect a fresh window: hits=1 and ttl reset
+		expect(result.totalHits).toEqual(1)
 	})
 })
