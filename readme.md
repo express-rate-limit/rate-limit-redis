@@ -48,7 +48,7 @@ Replace `{version}` with the version of the package that you want to use, e.g.:
 This library is provided in ESM as well as CJS forms, and works with both
 Javascript and Typescript projects.
 
-**This package requires you to use Node 16 or above.**
+**This package requires you to use Node 16 or above and Redis 2.6.12 or above.**
 
 Import it in a CommonJS project (`type: commonjs` or no `type` field in
 `package.json`) as follows:
@@ -140,7 +140,7 @@ below:
 | Library                                                            | Function                                                                      |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
 | [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                       |
-| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args: string[]) => cluster.sendCommand(args[1], false, args)`                |
+| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args: string[]) => cluster.sendCommand(args[1], false, args)`      |
 | [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)` |
 | [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`             |
 | [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                        |
