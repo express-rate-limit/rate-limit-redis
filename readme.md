@@ -140,13 +140,52 @@ below:
 | Library                                                            | Function                                                                      |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
 | [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                       |
-| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | `async (...args: string[]) => cluster.sendCommand(args[1], false, args)`      |
+| [`node-redis`](https://github.com/redis/node-redis) (cluster)      | See `sendCommandCluster` below                                                |
 | [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)` |
 | [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`             |
 | [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                        |
 | [`redis-fast-driver`](https://github.com/h0x91b/redis-fast-driver) | `async (...args: string[]) => client.rawCallAsync(args)`                      |
 | [`yoredis`](https://github.com/djanowski/yoredis)                  | `async (...args: string[]) => (await client.callMany([args]))[0]`             |
 | [`noderis`](https://github.com/wallneradam/noderis)                | `async (...args: string[]) => client.callRedis(...args)`                      |
+
+##### `sendCommandCluster`
+
+In cluster mode, node-redis requires a little extra information to help route
+the command to to correct server. This is an alternative to `sendCommand` that
+provides the necessary extra information. The signature is as follows:
+
+```ts
+({key: string, isReadOnly: boolean, command: string[]}) => Promise<number> | number
+```
+
+Example usage:
+
+```ts
+import { rateLimit } from 'express-rate-limit'
+import { RedisStore, type RedisReply, type } from 'rate-limit-redis'
+import { createCluster } from 'redis'
+
+// Create a `node-redis` cluster client
+const cluster = new createCluster({
+	// see https://github.com/redis/node-redis/blob/master/docs/clustering.md
+})
+
+// Create and use the rate limiter
+const limiter = rateLimit({
+	// Rate limiter configuration here
+
+	// Redis store configuration
+	store: new RedisStore({
+		sendCommandCluster: ({
+			key,
+			isReadOnly,
+			command,
+		}: SendCommandClusterDetails) =>
+			cluster.sendCommand(key, isReadOnly, command) as Promise<RedisReply>,
+	}),
+})
+app.use(limiter)
+```
 
 #### `prefix`
 

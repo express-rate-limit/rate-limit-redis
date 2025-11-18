@@ -13,15 +13,20 @@ export type RedisReply = Data | Data[]
  */
 export type SendCommandFn = (...args: string[]) => Promise<RedisReply>
 
-/**
- * The configuration options for the store.
- */
-export type Options = {
-	/**
-	 * The function used to send commands to Redis.
-	 */
-	readonly sendCommand: SendCommandFn
+export type SendCommandClusterDetails = {
+	key?: string
+	isReadOnly: boolean
+	command: string[]
+}
 
+/**
+ * This alternative to SendCommandFn includes a little bit of extra data that node-redis requires, to help route the command to the correct server.
+ */
+export type SendCommandClusterFn = (
+	commandDetails: SendCommandClusterDetails,
+) => Promise<RedisReply>
+
+type CommonOptions = {
 	/**
 	 * The text to prepend to the key in Redis.
 	 */
@@ -33,3 +38,23 @@ export type Options = {
 	 */
 	readonly resetExpiryOnChange?: boolean
 }
+
+type SingleOptions = CommonOptions & {
+	/**
+	 * The function used to send commands to Redis.
+	 */
+	readonly sendCommand: SendCommandFn
+}
+
+type ClusterOptions = CommonOptions & {
+	/**
+	 * The alternative function used to send commands to Redis when in cluster mode.
+	 * (It provides extra parameters to help route the command to the correct redis node.)
+	 */
+	readonly sendCommandCluster: SendCommandClusterFn
+}
+
+/**
+ * The configuration options for the store.
+ */
+export type Options = SingleOptions | ClusterOptions
