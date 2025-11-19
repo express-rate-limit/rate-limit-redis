@@ -8,7 +8,12 @@ import type {
 	Options as RateLimitConfiguration,
 } from 'express-rate-limit'
 import scripts from './scripts.js'
-import type { Options, SendCommandFn, RedisReply } from './types.js'
+import type {
+	Options,
+	SendCommandClusterFn,
+	RedisReply,
+	SendCommandClusterDetails,
+} from './types.js'
 
 /**
  * Converts a string/number to a number.
@@ -49,8 +54,10 @@ const parseScriptResponse = (results: RedisReply): ClientRateLimitInfo => {
 export class RedisStore implements Store {
 	/**
 	 * The function used to send raw commands to Redis.
+	 *
+	 * When a non-cluster SendCommandFn is provided, a wrapper function is used to convert between the two
 	 */
-	sendCommand: SendCommandFn
+	sendCommand: SendCommandClusterFn
 
 	/**
 	 * The text to prepend to the key in Redis.
@@ -81,7 +88,22 @@ export class RedisStore implements Store {
 	 * @param options {Options} - The configuration options for the store.
 	 */
 	constructor(options: Options) {
-		this.sendCommand = options.sendCommand
+		if (typeof options !== 'object') {
+			throw new TypeError('rate-limit-redis: Error: options object is required')
+		}
+
+		if ('sendCommand' in options && !('sendCommandCluster' in options)) {
+			// Normal case: wrap the sendCommand function to convert from cluster to regular
+			this.sendCommand = async ({ command }: SendCommandClusterDetails) =>
+				options.sendCommand(...command)
+		} else if (!('sendCommand' in options) && 'sendCommandCluster' in options) {
+			this.sendCommand = options.sendCommandCluster
+		} else {
+			throw new Error(
+				'rate-limit-redis: Error: options must include either sendCommand or sendCommandCluster (but not both)',
+			)
+		}
+
 		this.prefix = options.prefix ?? 'rl:'
 		this.resetExpiryOnChange = options.resetExpiryOnChange ?? false
 
@@ -97,8 +119,12 @@ export class RedisStore implements Store {
 	/**
 	 * Loads the script used to increment a client's hit count.
 	 */
-	async loadIncrementScript(): Promise<string> {
-		const result = await this.sendCommand('SCRIPT', 'LOAD', scripts.increment)
+	async loadIncrementScript(key?: string): Promise<string> {
+		const result = await this.sendCommand({
+			key,
+			isReadOnly: false,
+			command: ['SCRIPT', 'LOAD', scripts.increment],
+		})
 
 		if (typeof result !== 'string') {
 			throw new TypeError('unexpected reply from redis client')
@@ -110,8 +136,12 @@ export class RedisStore implements Store {
 	/**
 	 * Loads the script used to fetch a client's hit count and expiry time.
 	 */
-	async loadGetScript(): Promise<string> {
-		const result = await this.sendCommand('SCRIPT', 'LOAD', scripts.get)
+	async loadGetScript(key?: string): Promise<string> {
+		const result = await this.sendCommand({
+			key,
+			isReadOnly: false,
+			command: ['SCRIPT', 'LOAD', scripts.get],
+		})
 
 		if (typeof result !== 'string') {
 			throw new TypeError('unexpected reply from redis client')
@@ -123,23 +153,28 @@ export class RedisStore implements Store {
 	/**
 	 * Runs the increment command, and retries it if the script is not loaded.
 	 */
-	async retryableIncrement(key: string): Promise<RedisReply> {
+	async retryableIncrement(_key: string): Promise<RedisReply> {
+		const key = this.prefixKey(_key)
 		const evalCommand = async () =>
-			this.sendCommand(
-				'EVALSHA',
-				await this.incrementScriptSha,
-				'1',
-				this.prefixKey(key),
-				this.resetExpiryOnChange ? '1' : '0',
-				this.windowMs.toString(),
-			)
+			this.sendCommand({
+				key,
+				isReadOnly: false,
+				command: [
+					'EVALSHA',
+					await this.incrementScriptSha,
+					'1',
+					key,
+					this.resetExpiryOnChange ? '1' : '0',
+					this.windowMs.toString(),
+				],
+			})
 
 		try {
 			const result = await evalCommand()
 			return result
 		} catch {
 			// TODO: distinguish different error types
-			this.incrementScriptSha = this.loadIncrementScript()
+			this.incrementScriptSha = this.loadIncrementScript(key)
 			return evalCommand()
 		}
 	}
@@ -171,13 +206,22 @@ export class RedisStore implements Store {
 	 *
 	 * @returns {ClientRateLimitInfo | undefined} - The number of hits and reset time for that client.
 	 */
-	async get(key: string): Promise<ClientRateLimitInfo | undefined> {
-		const results = await this.sendCommand(
-			'EVALSHA',
-			await this.getScriptSha,
-			'1',
-			this.prefixKey(key),
-		)
+	async get(_key: string): Promise<ClientRateLimitInfo | undefined> {
+		const key = this.prefixKey(_key)
+		let results
+		const evalCommand = async () =>
+			this.sendCommand({
+				key,
+				isReadOnly: true,
+				command: ['EVALSHA', await this.getScriptSha, '1', key],
+			})
+		try {
+			results = await evalCommand()
+		} catch {
+			// TODO: distinguish different error types
+			this.getScriptSha = this.loadGetScript(key)
+			results = await evalCommand()
+		}
 
 		return parseScriptResponse(results)
 	}
@@ -199,8 +243,9 @@ export class RedisStore implements Store {
 	 *
 	 * @param key {string} - The identifier for a client
 	 */
-	async decrement(key: string): Promise<void> {
-		await this.sendCommand('DECR', this.prefixKey(key))
+	async decrement(_key: string): Promise<void> {
+		const key = this.prefixKey(_key)
+		await this.sendCommand({ key, isReadOnly: false, command: ['DECR', key] })
 	}
 
 	/**
@@ -208,8 +253,9 @@ export class RedisStore implements Store {
 	 *
 	 * @param key {string} - The identifier for a client
 	 */
-	async resetKey(key: string): Promise<void> {
-		await this.sendCommand('DEL', this.prefixKey(key))
+	async resetKey(_key: string): Promise<void> {
+		const key = this.prefixKey(_key)
+		await this.sendCommand({ key, isReadOnly: false, command: ['DEL', key] })
 	}
 }
 
