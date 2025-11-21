@@ -25,9 +25,7 @@ describe('Redis Integration Tests', () => {
 				port,
 				lazyConnect: true,
 			})
-			await client.connect().catch(() => {
-				console.warn('Skipping Redis tests - connection failed')
-			})
+			await client.connect()
 		})
 
 		afterAll(async () => {
@@ -35,11 +33,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with sendCommand', async () => {
-			if (client.status !== 'ready') {
-				console.warn('Redis not ready, skipping test')
-				return
-			}
-
 			store = new RedisStore({
 				async sendCommand(...args: string[]) {
 					const result = await client.call(args[0], ...args.slice(1))
@@ -63,8 +56,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with decrement', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-single-decr'
 			await store.resetKey(key)
 
@@ -77,8 +68,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with get', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-single-get'
 			await store.resetKey(key)
 
@@ -90,8 +79,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should handle TTL correctly', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-single-ttl'
 			// Initialize with short window
 			const shortStore = new RedisStore({
@@ -128,11 +115,7 @@ describe('Redis Integration Tests', () => {
 				clusterRetryStrategy: () => null,
 				lazyConnect: true,
 			})
-			try {
-				await client.connect()
-			} catch {
-				console.warn('Skipping Redis Cluster tests - connection failed')
-			}
+			await client.connect()
 		})
 
 		afterAll(async () => {
@@ -140,31 +123,9 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with sendCommandCluster', async () => {
-			if (client.status !== 'ready') {
-				console.warn('Redis Cluster not ready, skipping test')
-				return
-			}
-
 			store = new RedisStore({
-				async sendCommandCluster(details: SendCommandClusterDetails) {
-					const { command } = details
-
-					// If SCRIPT LOAD, send to all master nodes
-					if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
-						const nodes = client.nodes('master')
-						await Promise.all(
-							nodes.map(async (node) =>
-								node.call(command[0], ...command.slice(1)),
-							),
-						)
-						// Return the result from one of them (they should be identical)
-						const result = await client.call(command[0], ...command.slice(1))
-						return result as RedisReply
-					}
-
-					const result = await client.call(command[0], ...command.slice(1))
-					return result as RedisReply
-				},
+				sendCommandCluster: async (details: SendCommandClusterDetails) =>
+					client.call(details.command[0], ...details.command.slice(1)),
 			} as RedisOptions)
 			store.init({ windowMs: 1000 } as RateLimitOptions)
 
@@ -183,8 +144,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with decrement', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-cluster-decr'
 			await store.resetKey(key)
 
@@ -197,8 +156,6 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should work with get', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-cluster-get'
 			await store.resetKey(key)
 
@@ -210,29 +167,11 @@ describe('Redis Integration Tests', () => {
 		})
 
 		it('should handle TTL correctly', async () => {
-			if (client.status !== 'ready') return
-
 			const key = 'test-cluster-ttl'
 			// Initialize with short window
 			const shortStore = new RedisStore({
-				async sendCommandCluster(details: SendCommandClusterDetails) {
-					const { command } = details
-
-					// If SCRIPT LOAD, send to all master nodes
-					if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
-						const nodes = client.nodes('master')
-						await Promise.all(
-							nodes.map(async (node) =>
-								node.call(command[0], ...command.slice(1)),
-							),
-						)
-						const result = await client.call(command[0], ...command.slice(1))
-						return result as RedisReply
-					}
-
-					const result = await client.call(command[0], ...command.slice(1))
-					return result as RedisReply
-				},
+				sendCommandCluster: async (details: SendCommandClusterDetails) =>
+					client.call(details.command[0], ...details.command.slice(1)),
 			} as RedisOptions)
 			shortStore.init({ windowMs: 1000 } as RateLimitOptions)
 
