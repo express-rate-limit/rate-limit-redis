@@ -31,6 +31,17 @@ jobs:
         node-version: [lts/*, latest]
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+      redis-cluster:
+        image: grokzen/redis-cluster:7.0.0
+        env:
+          IP: 0.0.0.0
+        ports:
+          - 7000-7005:7000-7005
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -42,6 +53,9 @@ jobs:
         run: |
           npm ci
           npm run test:lib
+        env:
+          REDIS_PORT: 6379
+          REDIS_CLUSTER_PORT: 7000
   publish:
     name: Publish
     needs: [lint, test-library]

@@ -1,0 +1,13 @@
+version: '3'
+services:
+  redis:
+    image: redis:7
+    ports:
+      - '6385:6379'
+
+  redis-cluster:
+    image: grokzen/redis-cluster:7.0.0
+    environment:
+      - IP=0.0.0.0
+    ports:
+      - '7010-7015:7000-7005'
