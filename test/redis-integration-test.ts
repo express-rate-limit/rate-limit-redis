@@ -148,6 +148,20 @@ describe('Redis Integration Tests', () => {
 			store = new RedisStore({
 				async sendCommandCluster(details: SendCommandClusterDetails) {
 					const { command } = details
+
+					// If SCRIPT LOAD, send to all master nodes
+					if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
+						const nodes = client.nodes('master')
+						await Promise.all(
+							nodes.map(async (node) =>
+								node.call(command[0], ...command.slice(1)),
+							),
+						)
+						// Return the result from one of them (they should be identical)
+						const result = await client.call(command[0], ...command.slice(1))
+						return result as RedisReply
+					}
+
 					const result = await client.call(command[0], ...command.slice(1))
 					return result as RedisReply
 				},
@@ -203,6 +217,19 @@ describe('Redis Integration Tests', () => {
 			const shortStore = new RedisStore({
 				async sendCommandCluster(details: SendCommandClusterDetails) {
 					const { command } = details
+
+					// If SCRIPT LOAD, send to all master nodes
+					if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
+						const nodes = client.nodes('master')
+						await Promise.all(
+							nodes.map(async (node) =>
+								node.call(command[0], ...command.slice(1)),
+							),
+						)
+						const result = await client.call(command[0], ...command.slice(1))
+						return result as RedisReply
+					}
+
 					const result = await client.call(command[0], ...command.slice(1))
 					return result as RedisReply
 				},

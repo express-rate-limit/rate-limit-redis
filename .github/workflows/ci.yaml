@@ -41,7 +41,7 @@ jobs:
       - name: Run library tests
         run: |
           npm ci
-          npm run test:lib
+          npm run test:unit
   test-integration:
     name: Test (Integration)
     needs: [test-library]
@@ -67,7 +67,7 @@ jobs:
       - name: Run integration tests
         run: |
           npm ci
-          npm run test:lib
+          npm run test:integration
         env:
           REDIS_PORT: 6379
           REDIS_CLUSTER_PORT: 7000
