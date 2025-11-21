@@ -155,7 +155,7 @@ export class RedisStore implements Store {
 	 */
 	async retryableIncrement(_key: string): Promise<RedisReply> {
 		const key = this.prefixKey(_key)
-		const evalCommand = async () =>
+		const evalShaCommand = async () =>
 			this.sendCommand({
 				key,
 				isReadOnly: false,
@@ -169,12 +169,28 @@ export class RedisStore implements Store {
 				],
 			})
 
+		const evalCommand = async () =>
+			this.sendCommand({
+				key,
+				isReadOnly: false,
+				command: [
+					'EVAL',
+					scripts.increment,
+					'1',
+					key,
+					this.resetExpiryOnChange ? '1' : '0',
+					this.windowMs.toString(),
+				],
+			})
+
 		try {
-			const result = await evalCommand()
+			const result = await evalShaCommand()
 			return result
 		} catch {
-			// TODO: distinguish different error types
-			this.incrementScriptSha = this.loadIncrementScript(key)
+			// In Redis Cluster, scripts loaded on one node may not be available
+			// on the node where the key is located. Fall back to EVAL.
+			// We don't need to check for NOSCRIPT explicitly because if EVALSHA fails
+			// for ANY reason, EVAL is a safe fallback that guarantees execution.
 			return evalCommand()
 		}
 	}
@@ -209,17 +225,22 @@ export class RedisStore implements Store {
 	async get(_key: string): Promise<ClientRateLimitInfo | undefined> {
 		const key = this.prefixKey(_key)
 		let results
-		const evalCommand = async () =>
+		const evalShaCommand = async () =>
 			this.sendCommand({
 				key,
 				isReadOnly: true,
 				command: ['EVALSHA', await this.getScriptSha, '1', key],
 			})
+		const evalCommand = async () =>
+			this.sendCommand({
+				key,
+				isReadOnly: true,
+				command: ['EVAL', scripts.get, '1', key],
+			})
 		try {
-			results = await evalCommand()
+			results = await evalShaCommand()
 		} catch {
-			// TODO: distinguish different error types
-			this.getScriptSha = this.loadGetScript(key)
+			// Fallback to EVAL if EVALSHA fails
 			results = await evalCommand()
 		}
 
