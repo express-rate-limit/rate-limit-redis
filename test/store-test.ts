@@ -345,4 +345,31 @@ describe('redis store test', () => {
 		// With NEW script we expect a fresh window: hits=1 and ttl reset
 		expect(result.totalHits).toEqual(1)
 	})
+
+	it('should bind sendCommand to this', async () => {
+		// A custom sendCommand that verifies `this` is bound to the RedisStore instance
+		const customSendCommand = async function (
+			this: RedisStore,
+			...args: string[]
+		) {
+			if (!(this instanceof RedisStore)) {
+				throw new TypeError('this is not bound to RedisStore instance')
+			}
+
+			return sendCommand(...args)
+		}
+
+		class CustomRedisStore extends RedisStore {
+			constructor() {
+				super({
+					sendCommand: customSendCommand,
+				})
+			}
+		}
+		const store = new CustomRedisStore()
+		store.init({ windowMs: 60 } as Options)
+		const key = 'test-store'
+		const { totalHits } = await store.increment(key)
+		expect(totalHits).toEqual(1)
+	})
 })
