@@ -95,9 +95,9 @@ export class RedisStore implements Store {
 		if ('sendCommand' in options && !('sendCommandCluster' in options)) {
 			// Normal case: wrap the sendCommand function to convert from cluster to regular
 			this.sendCommand = async ({ command }: SendCommandClusterDetails) =>
-				options.sendCommand(...command)
+				options.sendCommand.bind(this)(...command)
 		} else if (!('sendCommand' in options) && 'sendCommandCluster' in options) {
-			this.sendCommand = options.sendCommandCluster
+			this.sendCommand = options.sendCommandCluster.bind(this)
 		} else {
 			throw new Error(
 				'rate-limit-redis: Error: options must include either sendCommand or sendCommandCluster (but not both)',
