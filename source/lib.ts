@@ -94,8 +94,9 @@ export class RedisStore implements Store {
 
 		if ('sendCommand' in options && !('sendCommandCluster' in options)) {
 			// Normal case: wrap the sendCommand function to convert from cluster to regular
+			const sendCommandFn = options.sendCommand.bind(this)
 			this.sendCommand = async ({ command }: SendCommandClusterDetails) =>
-				options.sendCommand.bind(this)(...command)
+				sendCommandFn(...command)
 		} else if (!('sendCommand' in options) && 'sendCommandCluster' in options) {
 			this.sendCommand = options.sendCommandCluster.bind(this)
 		} else {
