@@ -8,6 +8,7 @@ import MockRedisClient from 'ioredis-mock'
 import DefaultExportRedisStore, {
 	RedisStore,
 	type RedisReply,
+	type SendCommandClusterDetails,
 } from '../source/index.js'
 
 // The mock redis client to use.
@@ -344,5 +345,66 @@ describe('redis store test', () => {
 
 		// With NEW script we expect a fresh window: hits=1 and ttl reset
 		expect(result.totalHits).toEqual(1)
+	})
+
+	it('should bind sendCommand to this', async () => {
+		// A custom sendCommand that verifies `this` is bound to the RedisStore instance
+		const customSendCommand = async function (
+			this: CustomRedisStore,
+			...args: string[]
+		) {
+			if (!(this instanceof CustomRedisStore)) {
+				throw new TypeError('this is not bound to RedisStore instance')
+			}
+
+			// Throw an error on DECR to test disableDecrement provided by the store
+			if (args[0] === 'DECR' && this.disableDecrement) {
+				throw new Error('Decrement not supported in this test')
+			}
+
+			return sendCommand(...args)
+		}
+
+		class CustomRedisStore extends RedisStore {
+			constructor() {
+				super({
+					sendCommand: customSendCommand,
+				})
+				this.init({ windowMs: 60 } as Options)
+			}
+
+			public get disableDecrement() {
+				return true
+			}
+		}
+		const store = new CustomRedisStore()
+		const key = 'test-store'
+		const { totalHits } = await store.increment(key)
+		await expect(store.decrement(key)).rejects.toThrow(
+			'Decrement not supported in this test',
+		)
+		expect(totalHits).toEqual(1)
+	})
+
+	it('should bind sendCommandCluster to this', async () => {
+		// A custom sendCommand that verifies `this` is bound to the RedisStore instance
+		const customSendCommandCluster = async function (
+			this: RedisStore,
+			commandDetails: SendCommandClusterDetails,
+		) {
+			if (!(this instanceof RedisStore)) {
+				throw new TypeError('this is not bound to RedisStore instance')
+			}
+
+			return sendCommand(...commandDetails.command)
+		}
+
+		const store = new RedisStore({
+			sendCommandCluster: customSendCommandCluster,
+		})
+		store.init({ windowMs: 60 } as Options)
+		const key = 'test-store'
+		const { totalHits } = await store.increment(key)
+		expect(totalHits).toEqual(1)
 	})
 })
