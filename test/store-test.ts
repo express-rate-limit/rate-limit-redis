@@ -8,6 +8,7 @@ import MockRedisClient from 'ioredis-mock'
 import DefaultExportRedisStore, {
 	RedisStore,
 	type RedisReply,
+	type SendCommandClusterDetails,
 } from '../source/index.js'
 
 // The mock redis client to use.
@@ -367,6 +368,33 @@ describe('redis store test', () => {
 			}
 		}
 		const store = new CustomRedisStore()
+		store.init({ windowMs: 60 } as Options)
+		const key = 'test-store'
+		const { totalHits } = await store.increment(key)
+		expect(totalHits).toEqual(1)
+	})
+
+	it('should bind sendCommandCluster to this', async () => {
+		// A custom sendCommand that verifies `this` is bound to the RedisStore instance
+		const customSendCommandCluster = async function (
+			this: RedisStore,
+			commandDetails: SendCommandClusterDetails,
+		) {
+			if (!(this instanceof RedisStore)) {
+				throw new TypeError('this is not bound to RedisStore instance')
+			}
+
+			return sendCommand(...commandDetails.command)
+		}
+
+		class CustomRedisClusterStore extends RedisStore {
+			constructor() {
+				super({
+					sendCommandCluster: customSendCommandCluster,
+				})
+			}
+		}
+		const store = new CustomRedisClusterStore()
 		store.init({ windowMs: 60 } as Options)
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
