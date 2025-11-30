@@ -350,11 +350,16 @@ describe('redis store test', () => {
 	it('should bind sendCommand to this', async () => {
 		// A custom sendCommand that verifies `this` is bound to the RedisStore instance
 		const customSendCommand = async function (
-			this: RedisStore,
+			this: CustomRedisStore,
 			...args: string[]
 		) {
-			if (!(this instanceof RedisStore)) {
+			if (!(this instanceof CustomRedisStore)) {
 				throw new TypeError('this is not bound to RedisStore instance')
+			}
+
+			// Throw an error on DECR to test disableDecrement provided by the store
+			if (args[0] === 'DECR' && this.disableDecrement) {
+				throw new Error('Decrement not supported in this test')
 			}
 
 			return sendCommand(...args)
@@ -365,12 +370,19 @@ describe('redis store test', () => {
 				super({
 					sendCommand: customSendCommand,
 				})
+				this.init({ windowMs: 60 } as Options)
+			}
+
+			public get disableDecrement() {
+				return true
 			}
 		}
 		const store = new CustomRedisStore()
-		store.init({ windowMs: 60 } as Options)
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
+		await expect(store.decrement(key)).rejects.toThrow(
+			'Decrement not supported in this test',
+		)
 		expect(totalHits).toEqual(1)
 	})
 
@@ -387,14 +399,9 @@ describe('redis store test', () => {
 			return sendCommand(...commandDetails.command)
 		}
 
-		class CustomRedisClusterStore extends RedisStore {
-			constructor() {
-				super({
-					sendCommandCluster: customSendCommandCluster,
-				})
-			}
-		}
-		const store = new CustomRedisClusterStore()
+		const store = new RedisStore({
+			sendCommandCluster: customSendCommandCluster,
+		})
 		store.init({ windowMs: 60 } as Options)
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
