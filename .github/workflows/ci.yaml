@@ -41,10 +41,39 @@ jobs:
       - name: Run library tests
         run: |
           npm ci
-          npm run test:lib
+          npm run test:unit
+  test-integration:
+    name: Test (Integration)
+    needs: [test-library]
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+      redis-cluster:
+        image: grokzen/redis-cluster:7.0.0
+        env:
+          IP: 0.0.0.0
+        ports:
+          - 7000-7005:7000-7005
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Use Node lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+      - name: Run integration tests
+        run: |
+          npm ci
+          npm run test:integration
+        env:
+          REDIS_PORT: 6379
+          REDIS_CLUSTER_PORT: 7000
   publish:
     name: Publish
-    needs: [lint, test-library]
+    needs: [lint, test-library, test-integration]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
