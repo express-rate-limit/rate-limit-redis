@@ -121,34 +121,44 @@ export class RedisStore implements Store {
 	 * Loads the script used to increment a client's hit count.
 	 */
 	async loadIncrementScript(key?: string): Promise<string> {
-		const result = await this.sendCommand({
-			key,
-			isReadOnly: false,
-			command: ['SCRIPT', 'LOAD', scripts.increment],
-		})
+		const promise = (async () => {
+			const result = await this.sendCommand({
+				key,
+				isReadOnly: false,
+				command: ['SCRIPT', 'LOAD', scripts.increment],
+			})
 
-		if (typeof result !== 'string') {
-			throw new TypeError('unexpected reply from redis client')
-		}
+			if (typeof result !== 'string') {
+				throw new TypeError('unexpected reply from redis client')
+			}
 
-		return result
+			return result
+		})()
+
+		promise.catch(() => {})
+		return promise
 	}
 
 	/**
 	 * Loads the script used to fetch a client's hit count and expiry time.
 	 */
 	async loadGetScript(key?: string): Promise<string> {
-		const result = await this.sendCommand({
-			key,
-			isReadOnly: false,
-			command: ['SCRIPT', 'LOAD', scripts.get],
-		})
+		const promise = (async () => {
+			const result = await this.sendCommand({
+				key,
+				isReadOnly: false,
+				command: ['SCRIPT', 'LOAD', scripts.get],
+			})
 
-		if (typeof result !== 'string') {
-			throw new TypeError('unexpected reply from redis client')
-		}
+			if (typeof result !== 'string') {
+				throw new TypeError('unexpected reply from redis client')
+			}
 
-		return result
+			return result
+		})()
+
+		promise.catch(() => {})
+		return promise
 	}
 
 	/**
@@ -170,14 +180,16 @@ export class RedisStore implements Store {
 				],
 			})
 
+		let result
 		try {
-			const result = await evalCommand()
-			return result
+			result = await evalCommand()
 		} catch {
 			// TODO: distinguish different error types
 			this.incrementScriptSha = this.loadIncrementScript(key)
-			return evalCommand()
+			result = await evalCommand()
 		}
+
+		return result
 	}
 
 	/**
@@ -209,13 +221,14 @@ export class RedisStore implements Store {
 	 */
 	async get(_key: string): Promise<ClientRateLimitInfo | undefined> {
 		const key = this.prefixKey(_key)
-		let results
 		const evalCommand = async () =>
 			this.sendCommand({
 				key,
 				isReadOnly: true,
 				command: ['EVALSHA', await this.getScriptSha, '1', key],
 			})
+
+		let results
 		try {
 			results = await evalCommand()
 		} catch {
