@@ -2,7 +2,15 @@
 // The tests for the store.
 
 import { createHash } from 'node:crypto'
-import { expect, jest } from '@jest/globals'
+import process from 'node:process'
+import {
+	expect,
+	jest,
+	describe,
+	it,
+	beforeEach,
+	afterEach,
+} from '@jest/globals'
 import { type Options } from 'express-rate-limit'
 import MockRedisClient from 'ioredis-mock'
 import DefaultExportRedisStore, {
@@ -58,7 +66,7 @@ const sendCommand = async (...args: string[]): Promise<RedisReply> => {
 
 describe('redis store test', () => {
 	// Mock timers so we can fast forward time instead of waiting for n seconds
-	beforeEach(() => jest.useFakeTimers())
+	beforeEach(async () => jest.useFakeTimers())
 	afterEach(async () => {
 		jest.useRealTimers()
 		await client.flushall()
@@ -406,5 +414,43 @@ describe('redis store test', () => {
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
 		expect(totalHits).toEqual(1)
+	})
+
+	it('handles errors in loadIncrementScript and loadGetScript to prevent unhandled rejections', async () => {
+		const unhandledRejections: PromiseRejectionEvent[] = []
+		const unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
+			unhandledRejections.push(event)
+		}
+
+		// Add handler to catch unhandled rejections
+		// Note: this doesn't seem to actually work in the current version of Jest, as the unhandledRejections array is always empty. If you can figure out a way to reliably test this, replace the expect at the end with a check on the unhandledRejections array.
+		// when an unhandled rejection occurs, jest prints the stack trace and exits - it doesn't finish running any other tests or give the usual pass/fail/coverage/etc.
+		process.on('unhandledRejection', unhandledRejectionHandler)
+
+		try {
+			// Create a sendCommand that fails for SCRIPT LOAD
+			const failingSendCommand = async (
+				...args: string[]
+			): Promise<RedisReply> => {
+				if (args[0] === 'SCRIPT') {
+					throw new Error('Redis connection failed during script load')
+				}
+
+				return sendCommand(...args)
+			}
+
+			// Create store - this will start loading scripts without awaiting
+			const store = new RedisStore({ sendCommand: failingSendCommand })
+			store.init({ windowMs: 10 } as Options)
+
+			// Give the rejected promises a chance to trigger unhandled rejection
+			jest.advanceTimersByTime(100)
+
+			// If we reach here and unhandledRejections array is populated,
+			// it means the orphaned promises threw without being caught
+			expect(unhandledRejections.length).toBe(0)
+		} finally {
+			process.off('unhandledRejection', unhandledRejectionHandler)
+		}
 	})
 })

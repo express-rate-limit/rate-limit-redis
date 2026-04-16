@@ -113,8 +113,20 @@ export class RedisStore implements Store {
 		// promise return. This way, if increment/get start being called before
 		// the script has finished loading, it will wait until it is loaded
 		// before it continues.
-		this.incrementScriptSha = this.loadIncrementScript()
-		this.getScriptSha = this.loadGetScript()
+		this.incrementScriptSha = this.loadIncrementScript().catch((error) => {
+			console.error(
+				'rate-limit-redis: Error uploading lua script (increment) to redis server:',
+				error,
+			)
+			return 'upload-error' // Placeholder
+		})
+		this.getScriptSha = this.loadGetScript().catch((error) => {
+			console.error(
+				'rate-limit-redis: Error uploading lua script (get) to redis server:',
+				error,
+			)
+			return 'upload-error'
+		})
 	}
 
 	/**
