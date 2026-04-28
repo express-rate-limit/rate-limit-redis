@@ -151,7 +151,7 @@ below:
 ##### `sendCommandCluster`
 
 In cluster mode, node-redis requires a little extra information to help route
-the command to to correct server. This is an alternative to `sendCommand` that
+the command to the correct server. This is an alternative to `sendCommand` that
 provides the necessary extra information. The signature is as follows:
 
 ```ts
@@ -162,7 +162,11 @@ Example usage:
 
 ```ts
 import { rateLimit } from 'express-rate-limit'
-import { RedisStore, type RedisReply, type } from 'rate-limit-redis'
+import {
+	RedisStore,
+	type RedisReply,
+	type SendCommandClusterDetails,
+} from 'rate-limit-redis'
 import { createCluster } from 'redis'
 
 // Create a `node-redis` cluster client
