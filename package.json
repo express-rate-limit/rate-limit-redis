@@ -52,7 +52,7 @@
     "prepare": "run-s compile && husky install config/husky"
   },
   "peerDependencies": {
-    "express-rate-limit": ">= 6"
+    "express-rate-limit": ">= 8.5.0"
   },
   "devDependencies": {
     "@express-rate-limit/prettier": "1.1.0",
@@ -97,5 +97,6 @@
   "lint-staged": {
     "{source,test}/**/*.ts": "xo --fix",
     "*.{yaml,json,md}": "prettier --write"
-  }
+  },
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"
 }

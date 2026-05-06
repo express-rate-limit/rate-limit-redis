@@ -188,7 +188,7 @@ export class RedisStore implements Store {
 	 *
 	 * @param options {RateLimitConfiguration} - The options used to setup the middleware.
 	 */
-	init(options: RateLimitConfiguration) {
+	async init(options: RateLimitConfiguration) {
 		this.windowMs = options.windowMs
 
 		// So that the script loading can occur non-blocking, this will send
@@ -199,10 +199,7 @@ export class RedisStore implements Store {
 		this.incrementScriptSha = this.loadIncrementScript()
 		this.getScriptSha = this.loadGetScript()
 
-		// Handle the promises to prevent unhandled rejections if Redis is down
-		// during initialization. They will still throw when awaited later.
-		void this.incrementScriptSha.catch(() => {})
-		void this.getScriptSha.catch(() => {})
+		return Promise.all([this.incrementScriptSha, this.getScriptSha])
 	}
 
 	/**
