@@ -2,7 +2,14 @@
 // The tests for the store.
 
 import { createHash } from 'node:crypto'
-import { expect, jest } from '@jest/globals'
+import {
+	expect,
+	jest,
+	describe,
+	it,
+	beforeEach,
+	afterEach,
+} from '@jest/globals'
 import { type Options } from 'express-rate-limit'
 import MockRedisClient from 'ioredis-mock'
 import DefaultExportRedisStore, {
@@ -58,7 +65,9 @@ const sendCommand = async (...args: string[]): Promise<RedisReply> => {
 
 describe('redis store test', () => {
 	// Mock timers so we can fast forward time instead of waiting for n seconds
-	beforeEach(() => jest.useFakeTimers())
+	beforeEach(() => {
+		jest.useFakeTimers()
+	})
 	afterEach(async () => {
 		jest.useRealTimers()
 		await client.flushall()
@@ -66,7 +75,7 @@ describe('redis store test', () => {
 
 	it('supports custom prefixes', async () => {
 		const store = new RedisStore({ sendCommand, prefix: 'test-' })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'store'
 
@@ -80,7 +89,7 @@ describe('redis store test', () => {
 
 	it('sets the value to 1 on first call to `increment`', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -95,7 +104,7 @@ describe('redis store test', () => {
 
 	it('increments the key for the store when `increment` is called', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -111,7 +120,7 @@ describe('redis store test', () => {
 
 	it('decrements the key for the store when `decrement` is called', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -129,7 +138,7 @@ describe('redis store test', () => {
 
 	it('resets the count for a key in the store when `resetKey` is called', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -148,7 +157,7 @@ describe('redis store test', () => {
 
 	it('fetches the count for a key in the store when `getKey` is called', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -165,7 +174,7 @@ describe('redis store test', () => {
 
 	it('resets expiry time on change if `resetExpiryOnChange` is set to `true`', async () => {
 		const store = new RedisStore({ sendCommand, resetExpiryOnChange: true })
-		store.init({ windowMs: 60 } as Options)
+		await store.init({ windowMs: 60 } as Options)
 
 		const key = 'test-store'
 
@@ -186,7 +195,7 @@ describe('redis store test', () => {
 
 	it('resets the count for all the keys in the store when the timeout is reached', async () => {
 		const store = new RedisStore({ sendCommand })
-		store.init({ windowMs: 50 } as Options)
+		await store.init({ windowMs: 50 } as Options)
 
 		const keyOne = 'test-store-one'
 		const keyTwo = 'test-store-two'
@@ -204,7 +213,7 @@ describe('redis store test', () => {
 	it('starts new window with count 1 when TTL expired (race fix)', async () => {
 		const store = new RedisStore({ sendCommand })
 		const windowMs = 50
-		store.init({ windowMs } as Options)
+		await store.init({ windowMs } as Options)
 
 		const key = 'test-expired-window'
 
@@ -226,7 +235,7 @@ describe('redis store test', () => {
 	it.skip('do not reset the expiration when the ttl is very close to 0', async () => {
 		const store = new RedisStore({ sendCommand })
 		const windowMs = 60
-		store.init({ windowMs } as Options)
+		await store.init({ windowMs } as Options)
 
 		const key = 'test-store'
 		await store.increment(key)
@@ -247,7 +256,7 @@ describe('redis store test', () => {
 
 	it('default export works', async () => {
 		const store = new DefaultExportRedisStore({ sendCommand })
-		store.init({ windowMs: 10 } as Options)
+		await store.init({ windowMs: 10 } as Options)
 
 		const key = 'test-store'
 
@@ -332,7 +341,7 @@ describe('redis store test', () => {
 		}
 
 		const store = new RedisStore({ sendCommand: sendCommandStub })
-		store.init({ windowMs: 60 } as Options)
+		await store.init({ windowMs: 60 } as Options)
 
 		const key = 'pttl-zero-exists'
 
@@ -370,7 +379,6 @@ describe('redis store test', () => {
 				super({
 					sendCommand: customSendCommand,
 				})
-				this.init({ windowMs: 60 } as Options)
 			}
 
 			public get disableDecrement() {
@@ -378,6 +386,7 @@ describe('redis store test', () => {
 			}
 		}
 		const store = new CustomRedisStore()
+		await store.init({ windowMs: 60 } as Options)
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
 		await expect(store.decrement(key)).rejects.toThrow(
@@ -402,7 +411,7 @@ describe('redis store test', () => {
 		const store = new RedisStore({
 			sendCommandCluster: customSendCommandCluster,
 		})
-		store.init({ windowMs: 60 } as Options)
+		await store.init({ windowMs: 60 } as Options)
 		const key = 'test-store'
 		const { totalHits } = await store.increment(key)
 		expect(totalHits).toEqual(1)
