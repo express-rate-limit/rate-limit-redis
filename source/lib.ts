@@ -74,8 +74,8 @@ export class RedisStore implements Store {
 	 * Stores the loaded SHA1s of the LUA scripts used for executing the increment
 	 * and get key operations.
 	 */
-	incrementScriptSha: Promise<string>
-	getScriptSha: Promise<string>
+	incrementScriptSha!: Promise<string>
+	getScriptSha!: Promise<string>
 
 	/**
 	 * The number of milliseconds to remember that user's requests.
@@ -107,14 +107,6 @@ export class RedisStore implements Store {
 
 		this.prefix = options.prefix ?? 'rl:'
 		this.resetExpiryOnChange = options.resetExpiryOnChange ?? false
-
-		// So that the script loading can occur non-blocking, this will send
-		// the script to be loaded, and will capture the value within the
-		// promise return. This way, if increment/get start being called before
-		// the script has finished loading, it will wait until it is loaded
-		// before it continues.
-		this.incrementScriptSha = this.loadIncrementScript()
-		this.getScriptSha = this.loadGetScript()
 	}
 
 	/**
@@ -196,8 +188,18 @@ export class RedisStore implements Store {
 	 *
 	 * @param options {RateLimitConfiguration} - The options used to setup the middleware.
 	 */
-	init(options: RateLimitConfiguration) {
+	async init(options: RateLimitConfiguration) {
 		this.windowMs = options.windowMs
+
+		// So that the script loading can occur non-blocking, this will send
+		// the script to be loaded, and will capture the value within the
+		// promise return. This way, if increment/get start being called before
+		// the script has finished loading, it will wait until it is loaded
+		// before it continues.
+		this.incrementScriptSha = this.loadIncrementScript()
+		this.getScriptSha = this.loadGetScript()
+
+		await Promise.all([this.incrementScriptSha, this.getScriptSha])
 	}
 
 	/**
