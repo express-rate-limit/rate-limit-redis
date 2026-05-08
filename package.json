@@ -97,5 +97,5 @@
   "lint-staged": {
     "{source,test}/**/*.ts": "xo --fix",
     "*.{yaml,json,md}": "prettier --write"
-  },
+  }
 }
