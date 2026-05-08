@@ -199,7 +199,7 @@ export class RedisStore implements Store {
 		this.incrementScriptSha = this.loadIncrementScript()
 		this.getScriptSha = this.loadGetScript()
 
-		return Promise.all([this.incrementScriptSha, this.getScriptSha])
+		await Promise.all([this.incrementScriptSha, this.getScriptSha])
 	}
 
 	/**
