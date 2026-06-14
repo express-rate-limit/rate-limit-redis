@@ -65,7 +65,7 @@
     "cross-env": "7.0.3",
     "del-cli": "5.1.0",
     "dts-bundle-generator": "8.0.1",
-    "esbuild": "0.25.0",
+    "esbuild": "0.28.1",
     "express": "4.22.2",
     "express-rate-limit": "7.0.0",
     "husky": "8.0.3",
