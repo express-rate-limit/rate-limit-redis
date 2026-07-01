@@ -197,12 +197,6 @@ The text to prepend to the key in Redict/Redis.
 
 Defaults to `rl:`.
 
-#### `resetExpiryOnChange`
-
-Whether to reset the expiry for a particular key whenever its hit count changes.
-
-Defaults to `false`.
-
 ## License
 
 MIT © [Wyatt Johnson](https://github.com/wyattjoh),

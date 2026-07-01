@@ -65,12 +65,6 @@ export class RedisStore implements Store {
 	prefix: string
 
 	/**
-	 * Whether to reset the expiry for a particular key whenever its hit count
-	 * changes.
-	 */
-	resetExpiryOnChange: boolean
-
-	/**
 	 * Stores the loaded SHA1s of the LUA scripts used for executing the increment
 	 * and get key operations.
 	 */
@@ -106,7 +100,6 @@ export class RedisStore implements Store {
 		}
 
 		this.prefix = options.prefix ?? 'rl:'
-		this.resetExpiryOnChange = options.resetExpiryOnChange ?? false
 	}
 
 	/**
@@ -157,7 +150,6 @@ export class RedisStore implements Store {
 					await this.incrementScriptSha,
 					'1',
 					key,
-					this.resetExpiryOnChange ? '1' : '0',
 					this.windowMs.toString(),
 				],
 			})

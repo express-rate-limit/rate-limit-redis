@@ -172,27 +172,6 @@ describe('redis store test', () => {
 		})
 	})
 
-	it('resets expiry time on change if `resetExpiryOnChange` is set to `true`', async () => {
-		const store = new RedisStore({ sendCommand, resetExpiryOnChange: true })
-		await store.init({ windowMs: 60 } as Options)
-
-		const key = 'test-store'
-
-		await store.increment(key) // => 1
-
-		// Ensure the hit count is 1, and the expiry is 60 milliseconds (value of
-		// `windowMs`).
-		expect(Number(await client.get('rl:test-store'))).toEqual(1)
-		expect(Number(await client.pttl('rl:test-store'))).toEqual(60)
-
-		await store.increment(key) // => 2
-
-		// Ensure the hit count is 2, and the expiry is 60 milliseconds (value of
-		// `windowMs`).
-		expect(Number(await client.get('rl:test-store'))).toEqual(2)
-		expect(Number(await client.pttl('rl:test-store'))).toEqual(60)
-	})
-
 	it('resets the count for all the keys in the store when the timeout is reached', async () => {
 		const store = new RedisStore({ sendCommand })
 		await store.init({ windowMs: 50 } as Options)
