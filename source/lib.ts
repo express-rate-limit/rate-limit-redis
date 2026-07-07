@@ -86,6 +86,12 @@ export class RedisStore implements Store {
 			throw new TypeError('rate-limit-redis: Error: options object is required')
 		}
 
+		if ('resetExpiryOnChange' in options) {
+			throw new TypeError(
+				'rate-limit-redis: Error: the resetExpiryOnChange option was removed in v6',
+			)
+		}
+
 		if ('sendCommand' in options && !('sendCommandCluster' in options)) {
 			// Normal case: wrap the sendCommand function to convert from cluster to regular
 			const sendCommandFn = options.sendCommand.bind(this)
