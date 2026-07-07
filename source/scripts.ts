@@ -7,9 +7,7 @@
  */
 const scripts = {
 	increment: `
-	      local windowMs = tonumber(ARGV[2])
-	      local resetOnChange = ARGV[1] == "1"
-
+	      local windowMs = tonumber(ARGV[1])
 	      local timeToExpire = redis.call("PTTL", KEYS[1])
 
 	      if timeToExpire <= 0 then
@@ -17,13 +15,7 @@ const scripts = {
 	        return { 1, windowMs }
 	      end
 
-	      local totalHits = redis.call("INCR", KEYS[1])
-
-	      if resetOnChange then
-	        redis.call("PEXPIRE", KEYS[1], windowMs)
-	        timeToExpire = windowMs
-	      end
-        
+	      local totalHits = redis.call("INCR", KEYS[1])        
 	      return { totalHits, timeToExpire }
 		`
 		// Ensure that code changes that affect whitespace do not affect
