@@ -46,8 +46,10 @@
     "format:code": "xo --fix",
     "format:rest": "prettier --write .",
     "format": "run-s format:*",
+    "test:unit": "jest test/store-test.ts",
+    "test:integration": "jest test/redis-integration-test.ts",
     "test:lib": "jest",
-    "test": "run-s lint test:*",
+    "test": "run-s lint test:lib",
     "pre-commit": "lint-staged",
     "prepare": "run-s compile && husky install config/husky"
   },
