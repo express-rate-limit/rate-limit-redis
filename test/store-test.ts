@@ -118,6 +118,65 @@ describe('redis store test', () => {
 		expect(Number(await client.pttl('rl:test-store'))).toEqual(10)
 	})
 
+	it('replays an increment after an explicit NOSCRIPT reply', async () => {
+		let incrementScriptLoads = 0
+		let incrementAttempts = 0
+		const retryingCommand = async (...args: string[]): Promise<RedisReply> => {
+			if (args[0] === 'SCRIPT') {
+				if (args[2]?.includes('INCR')) incrementScriptLoads += 1
+				return `sha-${incrementScriptLoads}`
+			}
+
+			if (args[0] === 'EVALSHA') {
+				incrementAttempts += 1
+				if (incrementAttempts === 1)
+					throw new Error('NOSCRIPT No matching script. Please use EVAL.')
+				return [1, 10]
+			}
+
+			return -99
+		}
+
+		const store = new RedisStore({ sendCommand: retryingCommand })
+		await store.init({ windowMs: 10 } as Options)
+
+		await expect(store.increment('test-store')).resolves.toMatchObject({
+			totalHits: 1,
+		})
+		expect(incrementAttempts).toEqual(2)
+		expect(incrementScriptLoads).toEqual(2)
+	})
+
+	it.each([
+		['timeout after commit', new Error('command timed out after 200ms')],
+		['connection refusal', new Error('connect ECONNREFUSED 127.0.0.1:6379')],
+		['malformed reply', new TypeError('unexpected reply from redis client')],
+		['command deadline', new Error('command deadline exceeded')],
+	])('does not replay an increment after %s', async (_name, failure) => {
+		let committedHits = 0
+		let incrementAttempts = 0
+		const indeterminateCommand = async (
+			...args: string[]
+		): Promise<RedisReply> => {
+			if (args[0] === 'SCRIPT') return 'sha-1'
+
+			if (args[0] === 'EVALSHA') {
+				incrementAttempts += 1
+				committedHits += 1
+				throw failure
+			}
+
+			return -99
+		}
+
+		const store = new RedisStore({ sendCommand: indeterminateCommand })
+		await store.init({ windowMs: 10 } as Options)
+
+		await expect(store.increment('test-store')).rejects.toBe(failure)
+		expect(incrementAttempts).toEqual(1)
+		expect(committedHits).toEqual(1)
+	})
+
 	it('decrements the key for the store when `decrement` is called', async () => {
 		const store = new RedisStore({ sendCommand })
 		await store.init({ windowMs: 10 } as Options)
