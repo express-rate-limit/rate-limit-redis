@@ -48,6 +48,17 @@ const parseScriptResponse = (results: RedisReply): ClientRateLimitInfo => {
 }
 
 /**
+ * Returns whether a Redis command failed because the server does not have the
+ * Lua script referenced by EVALSHA.
+ *
+ * A NOSCRIPT reply proves the increment did not execute, so loading the script
+ * and replaying it is safe. Other command failures can be indeterminate: Redis
+ * may have committed the increment before the client lost the response.
+ */
+const isNoScriptError = (error: unknown): error is Error =>
+	error instanceof Error && /^NOSCRIPT(?:\s|$)/.test(error.message)
+
+/**
  * A `Store` for the `express-rate-limit` package that stores hit counts in
  * Redis.
  */
@@ -163,8 +174,8 @@ export class RedisStore implements Store {
 		try {
 			const result = await evalCommand()
 			return result
-		} catch {
-			// TODO: distinguish different error types
+		} catch (error: unknown) {
+			if (!isNoScriptError(error)) throw error
 			this.incrementScriptSha = this.loadIncrementScript(key)
 			return evalCommand()
 		}
