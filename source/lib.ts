@@ -229,8 +229,8 @@ export class RedisStore implements Store {
 			})
 		try {
 			results = await evalCommand()
-		} catch {
-			// TODO: distinguish different error types
+		} catch (error: unknown) {
+			if (!isNoScriptError(error)) throw error
 			this.getScriptSha = this.loadGetScript(key)
 			results = await evalCommand()
 		}
