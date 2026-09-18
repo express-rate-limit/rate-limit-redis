@@ -114,14 +114,13 @@ describe('Redis Integration Tests', () => {
 				// If SCRIPT LOAD, send to all master nodes
 				if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
 					const nodes = client.nodes('master')
-					await Promise.all(
+					const results = await Promise.all(
 						nodes.map(async (node) =>
 							node.call(command[0], ...command.slice(1)),
 						),
 					)
 					// Return the result from one of them (they should be identical)
-					const result = await client.call(command[0], ...command.slice(1))
-					return result as RedisReply
+					return results[0] as RedisReply
 				}
 
 				const result = await client.call(command[0], ...command.slice(1))
