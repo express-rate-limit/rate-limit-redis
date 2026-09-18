@@ -15,9 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: Use Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - name: Check for lint/formatting errors
@@ -33,9 +33,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: Use Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run library tests
@@ -52,8 +52,8 @@ jobs:
       id-token: write
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+        uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
@@ -68,7 +68,7 @@ jobs:
           npm pack
           mv rate-limit-redis-*.tgz rate-limit-redis.tgz
       - name: Create a Github release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: rate-limit-redis.tgz
           body:
