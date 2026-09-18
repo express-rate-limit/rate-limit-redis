@@ -106,6 +106,28 @@ describe('Redis Integration Tests', () => {
 		let client: Cluster
 		let store: RedisStore
 
+		// Todo: consider making this part of the library
+		const makeIoredisSendCommandCluster =
+			(client: Cluster) => async (details: SendCommandClusterDetails) => {
+				const { command } = details
+
+				// If SCRIPT LOAD, send to all master nodes
+				if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
+					const nodes = client.nodes('master')
+					await Promise.all(
+						nodes.map(async (node) =>
+							node.call(command[0], ...command.slice(1)),
+						),
+					)
+					// Return the result from one of them (they should be identical)
+					const result = await client.call(command[0], ...command.slice(1))
+					return result as RedisReply
+				}
+
+				const result = await client.call(command[0], ...command.slice(1))
+				return result as RedisReply
+			}
+
 		beforeAll(async () => {
 			const host = process.env.REDIS_CLUSTER_HOST ?? 'localhost'
 			const port = Number(process.env.REDIS_CLUSTER_PORT ?? 7010)
@@ -124,8 +146,7 @@ describe('Redis Integration Tests', () => {
 
 		it('should work with sendCommandCluster', async () => {
 			store = new RedisStore({
-				sendCommandCluster: async (details: SendCommandClusterDetails) =>
-					client.call(details.command[0], ...details.command.slice(1)),
+				sendCommandCluster: makeIoredisSendCommandCluster(client),
 			} as RedisOptions)
 			await store.init({ windowMs: 1000 } as RateLimitOptions)
 
@@ -170,8 +191,7 @@ describe('Redis Integration Tests', () => {
 			const key = 'test-cluster-ttl'
 			// Initialize with short window
 			const shortStore = new RedisStore({
-				sendCommandCluster: async (details: SendCommandClusterDetails) =>
-					client.call(details.command[0], ...details.command.slice(1)),
+				sendCommandCluster: makeIoredisSendCommandCluster(client),
 			} as RedisOptions)
 			await shortStore.init({ windowMs: 1000 } as RateLimitOptions)
 
