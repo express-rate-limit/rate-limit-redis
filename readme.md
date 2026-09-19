@@ -131,8 +131,22 @@ The function used to send commands to Redis. The function signature is as
 follows:
 
 ```ts
-;(...args: string[]) => Promise<number> | number
+;(...args: string[]) => Promise<RedisReply>
 ```
+
+`args` contains the Redis command name followed by its arguments. For example,
+`sendCommand('SCRIPT', 'LOAD', script)` loads a Lua script. The adapter forwards
+these arguments to your Redis client and returns its reply.
+[`RedisReply`](https://github.com/express-rate-limit/rate-limit-redis/blob/main/source/types.ts#L7-L8)
+is exported by `rate-limit-redis` and includes strings, numbers, booleans, and
+arrays of those values:
+
+    type Data = boolean | number | string
+    export type RedisReply = Data | Data[]
+
+Clients accept raw commands in different forms. `node-redis` takes the entire
+command as an array (`client.sendCommand(args)`), while `ioredis` takes the
+command name followed by separate arguments (`client.call(command, ...args)`).
 
 The raw command sending function varies from library to library; some are given
 below:
@@ -155,8 +169,20 @@ the command to the correct server. This is an alternative to `sendCommand` that
 provides the necessary extra information. The signature is as follows:
 
 ```ts
-({key: string, isReadOnly: boolean, command: string[]}) => Promise<number> | number
+;(commandDetails: SendCommandClusterDetails) => Promise<RedisReply>
 ```
+
+[`SendCommandClusterDetails`](https://github.com/express-rate-limit/rate-limit-redis/blob/main/source/types.ts#L16-L20)
+is exported by `rate-limit-redis`. It contains `command`, an array with the
+command name and arguments; `isReadOnly`, which indicates whether the command
+only reads data; and an optional `key`, which helps the client choose the
+cluster node.
+
+    export type SendCommandClusterDetails = {
+        key?: string
+        isReadOnly: boolean
+        command: string[]
+    }
 
 Example usage:
 
