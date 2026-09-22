@@ -169,7 +169,9 @@ the command to the correct server. This is an alternative to `sendCommand` that
 provides the necessary extra information. The signature is as follows:
 
 ```ts
-;(commandDetails: SendCommandClusterDetails) => Promise<RedisReply>
+({key?: string, isReadOnly: boolean, command: string[]}) => Promise<RedisReply>
+// or
+(commandDetails: SendCommandClusterDetails) => Promise<RedisReply>
 ```
 
 [`SendCommandClusterDetails`](https://github.com/express-rate-limit/rate-limit-redis/blob/main/source/types.ts#L16-L20)
