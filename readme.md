@@ -103,8 +103,7 @@ import { RedisStore, type RedisReply } from 'rate-limit-redis'
 import RedisClient from 'ioredis'
 
 // Create a `ioredis` client
-const client = new RedisClient()
-// ... (see https://github.com/luin/ioredis#connect-to-redis)
+const client = new RedisClient() // see https://github.com/luin/ioredis#connect-to-redis
 
 // Create and use the rate limiter
 const limiter = rateLimit({
@@ -156,6 +155,7 @@ below:
 | [`node-redis`](https://github.com/redis/node-redis)                | `async (...args: string[]) => client.sendCommand(args)`                       |
 | [`node-redis`](https://github.com/redis/node-redis) (cluster)      | See `sendCommandCluster` below                                                |
 | [`ioredis`](https://github.com/luin/ioredis)                       | `async (command: string, ...args: string[]) => client.call(command, ...args)` |
+| [`ioredis`](https://github.com/luin/ioredis) (cluster)             | see ioredis cluster section below                                             |
 | [`handy-redis`](https://github.com/mmkal/handy-redis)              | `async (...args: string[]) => client.nodeRedis.sendCommand(args)`             |
 | [`tedis`](https://github.com/silkjs/tedis)                         | `async (...args: string[]) => client.command(...args)`                        |
 | [`redis-fast-driver`](https://github.com/h0x91b/redis-fast-driver) | `async (...args: string[]) => client.rawCallAsync(args)`                      |
@@ -214,6 +214,48 @@ const limiter = rateLimit({
 			command,
 		}: SendCommandClusterDetails) =>
 			cluster.sendCommand(key, isReadOnly, command) as Promise<RedisReply>,
+	}),
+})
+app.use(limiter)
+```
+
+##### ioredis cluster
+
+[`ioredis`](https://github.com/luin/ioredis) needs a bit more complex
+`sendCommandCluster` function:
+
+```ts
+import { rateLimit } from 'express-rate-limit'
+import { RedisStore, type RedisReply } from 'rate-limit-redis'
+import RedisClient from 'ioredis'
+
+// Create a `ioredis` client
+const client = new RedisClient() // see https://github.com/luin/ioredis#connect-to-redis
+
+// Create and use the rate limiter
+const limiter = rateLimit({
+	// Rate limiter configuration
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+
+	// Redis store configuration
+	store: new RedisStore({
+		sendCommandCluster: async ({ command }: SendCommandClusterDetails) => {
+			// If SCRIPT LOAD command, send it to all master nodes
+			if (command[0] === 'SCRIPT' && command[1] === 'LOAD') {
+				const nodes = client.nodes('master')
+				const results = await Promise.all(
+					nodes.map(async (node) => node.call(command[0], ...command.slice(1))),
+				)
+				// Return the result from one of them (they should be identical)
+				return results[0] as RedisReply
+			}
+			// All other commands
+			const result = await client.call(command[0], ...command.slice(1))
+			return result as RedisReply
+		},
 	}),
 })
 app.use(limiter)
