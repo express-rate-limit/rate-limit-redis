@@ -158,11 +158,6 @@ export class RedisStore implements Store {
 	 */
 	async retryableIncrement(_key: string): Promise<RedisReply> {
 		const key = this.prefixKey(_key)
-		// If the script failed to load earlier (e.g. Redis was unreachable during
-		// `init`), try loading it again instead of replaying the cached rejection.
-		this.incrementScriptSha = this.incrementScriptSha.catch(async () =>
-			this.loadIncrementScript(key),
-		)
 		const evalCommand = async () =>
 			this.sendCommand({
 				key,
@@ -226,11 +221,6 @@ export class RedisStore implements Store {
 	async get(_key: string): Promise<ClientRateLimitInfo | undefined> {
 		const key = this.prefixKey(_key)
 		let results
-		// If the script failed to load earlier (e.g. Redis was unreachable during
-		// `init`), try loading it again instead of replaying the cached rejection.
-		this.getScriptSha = this.getScriptSha.catch(async () =>
-			this.loadGetScript(key),
-		)
 		const evalCommand = async () =>
 			this.sendCommand({
 				key,
