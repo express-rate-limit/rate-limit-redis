@@ -177,6 +177,31 @@ describe('redis store test', () => {
 		expect(committedHits).toEqual(1)
 	})
 
+	it('recovers after redis was unreachable during `init`', async () => {
+		// Simulate a client that is offline when the store is initialized, and
+		// comes back online afterwards.
+		let online = false
+		const flakyCommand = async (...args: string[]): Promise<RedisReply> => {
+			if (!online) throw new Error('The client is offline')
+			return sendCommand(...args)
+		}
+
+		const store = new RedisStore({ sendCommand: flakyCommand })
+		await expect(store.init({ windowMs: 10 } as Options)).rejects.toThrow(
+			'The client is offline',
+		)
+
+		online = true
+
+		await expect(store.increment('test-store')).resolves.toMatchObject({
+			totalHits: 1,
+		})
+		await expect(store.get('test-store')).resolves.toMatchObject({
+			totalHits: 1,
+		})
+		expect(Number(await client.get('rl:test-store'))).toEqual(1)
+	})
+
 	it('decrements the key for the store when `decrement` is called', async () => {
 		const store = new RedisStore({ sendCommand })
 		await store.init({ windowMs: 10 } as Options)
