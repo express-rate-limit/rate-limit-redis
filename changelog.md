@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v6.0.2](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v6.0.2)
+
+### Fixed
+
+- Recover if Redis is unavailable during initialization but later becomes
+  available
+  ([#266](https://github.com/express-rate-limit/rate-limit-redis/pull/266))
+
 ## [v6.0.1](https://github.com/express-rate-limit/rate-limit-redis/releases/tag/v6.0.1)
 
 ### Fixed
