@@ -124,8 +124,7 @@ export class RedisStore implements Store {
 	 *
 	 * Any failure is rethrown as a NOSCRIPT error, so that `isNoScriptError()`
 	 * recognizes it and the caller retries loading the script (e.g. when Redis
-	 * was unreachable during `init`). This is safe, since the EVALSHA that
-	 * depends on the script never ran.
+	 * was unreachable during `init`).
 	 */
 	async loadScript(script: string, key?: string): Promise<string> {
 		try {
