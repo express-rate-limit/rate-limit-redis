@@ -120,37 +120,44 @@ export class RedisStore implements Store {
 	}
 
 	/**
+	 * Uploads a Lua script to Redis and returns its SHA1.
+	 *
+	 * Any failure is rethrown as a NOSCRIPT error, so that `isNoScriptError()`
+	 * recognizes it and the caller retries loading the script (e.g. when Redis
+	 * was unreachable during `init`).
+	 */
+	async loadScript(script: string, key?: string): Promise<string> {
+		try {
+			const result = await this.sendCommand({
+				key,
+				isReadOnly: false,
+				command: ['SCRIPT', 'LOAD', script],
+			})
+
+			if (typeof result !== 'string') {
+				throw new TypeError('unexpected reply from redis client')
+			}
+
+			return result
+		} catch (error: unknown) {
+			throw new Error(`NOSCRIPT uploading script failed: ${String(error)}`, {
+				cause: error,
+			})
+		}
+	}
+
+	/**
 	 * Loads the script used to increment a client's hit count.
 	 */
 	async loadIncrementScript(key?: string): Promise<string> {
-		const result = await this.sendCommand({
-			key,
-			isReadOnly: false,
-			command: ['SCRIPT', 'LOAD', scripts.increment],
-		})
-
-		if (typeof result !== 'string') {
-			throw new TypeError('unexpected reply from redis client')
-		}
-
-		return result
+		return this.loadScript(scripts.increment, key)
 	}
 
 	/**
 	 * Loads the script used to fetch a client's hit count and expiry time.
 	 */
 	async loadGetScript(key?: string): Promise<string> {
-		const result = await this.sendCommand({
-			key,
-			isReadOnly: false,
-			command: ['SCRIPT', 'LOAD', scripts.get],
-		})
-
-		if (typeof result !== 'string') {
-			throw new TypeError('unexpected reply from redis client')
-		}
-
-		return result
+		return this.loadScript(scripts.get, key)
 	}
 
 	/**
